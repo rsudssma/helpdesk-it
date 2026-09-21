@@ -57,6 +57,12 @@ button{font-family:inherit}
 .btn:disabled{opacity:.55}
 .btn-alt{background:var(--putih);color:var(--hijau);border:1.5px solid var(--hijau)}
 .btn-kecil{width:auto;padding:8px 13px;font-size:13px}
+.btn-bahaya{background:var(--merah)}
+.btn-bahaya:active{background:#b91c1c}
+.btn-bahaya-alt{background:var(--putih);color:var(--merah);border:1.5px solid #fca5a5}
+.zona-hapus{margin-top:18px;border-top:1px solid var(--garis);padding-top:14px}
+.zona-hapus .kotak{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:13px;margin-top:10px}
+.zona-hapus p{font-size:13px;color:#7f1d1d;margin:0 0 10px}
 .tautan-btn{background:none;border:0;color:var(--hijau);font-size:14px;font-weight:600;
             padding:4px 0;cursor:pointer}
 
@@ -905,6 +911,19 @@ async function bukaDetail(id) {
       '<div class="grup"><label for="uCatatan">Tambah catatan</label>' +
       '<textarea id="uCatatan" style="min-height:80px" placeholder="Tindakan yang dilakukan…"></textarea></div>' +
       '<button class="btn" id="btnSimpan" onclick="simpanPerubahan()">Simpan perubahan</button>' +
+      '<div class="zona-hapus">' +
+        '<button class="btn btn-bahaya-alt btn-kecil" id="btnBukaHapus" onclick="tampil(\'kotakHapus\', true); tampil(\'btnBukaHapus\', false)">Hapus tiket…</button>' +
+        '<div class="kotak sembunyi" id="kotakHapus">' +
+          '<p><b>Tiket akan dihapus permanen</b> beserta semua lampirannya. Untuk tiket yang sekadar salah isi, ' +
+          'lebih baik ubah status jadi <b>Ditolak</b> supaya pegawai bisa melihat alasannya.</p>' +
+          '<div class="grup"><label for="uAlasan">Alasan penghapusan <span class="wajib">*</span></label>' +
+          '<textarea id="uAlasan" style="min-height:70px" maxlength="500" placeholder="Contoh: Pegawai salah mengunggah KTP orang lain"></textarea></div>' +
+          '<div style="display:flex;gap:8px">' +
+            '<button class="btn btn-alt" style="flex:1" onclick="tampil(\'kotakHapus\', false); tampil(\'btnBukaHapus\', true)">Batal</button>' +
+            '<button class="btn btn-bahaya" style="flex:1" id="btnHapus" onclick="hapusTiket()">Hapus permanen</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
       '</div>';
   }
 
@@ -977,6 +996,23 @@ async function simpanPerubahan() {
   });
 
   $('btnSimpan').disabled = false;
+  if (!h.ok) return pesan('pesanDetail', h.pesan, 'salah');
+
+  tutupDetail();
+  pesan('pesanPetugas', h.pesan, 'benar');
+  muatStatistik();
+  muatSemuaTiket();
+  setTimeout(function () { pesan('pesanPetugas', ''); }, 5000);
+}
+
+async function hapusTiket() {
+  const alasan = $('uAlasan').value.trim();
+  if (alasan.length < 5) return pesan('pesanDetail', 'Tulis alasan penghapusan (minimal 5 huruf).', 'salah');
+
+  $('btnHapus').disabled = true;
+  pesan('pesanDetail', 'Menghapus…', 'info');
+  const h = await api('hapusTiket', { id: tiketTerpilih, alasan: alasan });
+  $('btnHapus').disabled = false;
   if (!h.ok) return pesan('pesanDetail', h.pesan, 'salah');
 
   tutupDetail();
