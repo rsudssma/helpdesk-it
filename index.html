@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Helpdesk IT</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --hijau:#0f766e; --hijau-gelap:#115e59; --hijau-muda:#ccfbf1;
+  --teks:#1f2937; --teks2:#6b7280; --garis:#e5e7eb; --bg:#f9fafb; --putih:#fff;
+  --merah:#dc2626; --merah-bg:#fee2e2;
+  --oranye:#ea580c; --oranye-bg:#ffedd5;
+  --biru:#2563eb; --biru-bg:#dbeafe;
+  --abu:#6b7280; --abu-bg:#f3f4f6;
+  --hijau-ok:#16a34a; --hijau-ok-bg:#dcfce7;
+  --r:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     background:var(--bg);color:var(--teks);font-size:15px;line-height:1.5}
+.sembunyi{display:none !important}
+
+header{background:var(--hijau);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+       position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px}
+header h1{font-size:17px;margin:0;font-weight:600;flex:1}
+header .sub{font-size:12px;opacity:.85;display:block;font-weight:400}
+.btn-keluar{background:rgba(255,255,255,.18);border:0;color:#fff;padding:7px 12px;
+            border-radius:8px;font-size:13px;cursor:pointer}
+
+main{padding:16px;max-width:760px;margin:0 auto;padding-bottom:96px}
+
+.kartu{background:var(--putih);border:1px solid var(--garis);border-radius:var(--r);
+       padding:16px;margin-bottom:12px}
+h2{font-size:16px;margin:0 0 14px;font-weight:600}
+label{display:block;font-size:13px;font-weight:500;margin:0 0 5px;color:var(--teks2)}
+.grup{margin-bottom:14px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--garis);
+  border-radius:9px;font-size:16px;font-family:inherit;background:var(--putih);color:var(--teks)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--hijau);outline-offset:-1px;border-color:var(--hijau)}
+textarea{min-height:110px;resize:vertical}
+.bantuan{font-size:12px;color:var(--teks2);margin-top:5px}
+
+button{font-family:inherit}
+.btn{width:100%;padding:13px;background:var(--hijau);color:#fff;border:0;
+     border-radius:9px;font-size:15px;font-weight:600;cursor:pointer}
+.btn:active{background:var(--hijau-gelap)}
+.btn:disabled{opacity:.55}
+.btn-alt{background:var(--putih);color:var(--hijau);border:1.5px solid var(--hijau)}
+.btn-kecil{width:auto;padding:9px 14px;font-size:13px}
+
+.tab{display:flex;gap:6px;background:var(--abu-bg);padding:4px;border-radius:10px;margin-bottom:14px}
+.tab button{flex:1;padding:9px;border:0;background:transparent;border-radius:7px;
+            font-size:14px;font-weight:500;color:var(--teks2);cursor:pointer}
+.tab button.aktif{background:var(--putih);color:var(--hijau);font-weight:600}
+
+.pesan{padding:11px 13px;border-radius:9px;font-size:14px;margin-bottom:12px}
+.pesan.salah{background:var(--merah-bg);color:#991b1b}
+.pesan.benar{background:var(--hijau-ok-bg);color:#166534}
+.pesan.info{background:var(--biru-bg);color:#1e40af}
+
+.tiket{background:var(--putih);border:1px solid var(--garis);border-radius:var(--r);
+       padding:14px;margin-bottom:10px;cursor:pointer}
+.tiket:active{background:var(--bg)}
+.tiket-atas{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.tiket-id{font-size:11px;color:var(--teks2);font-family:ui-monospace,monospace}
+.tiket-judul{font-weight:600;margin-bottom:5px;font-size:15px}
+.tiket-meta{font-size:12.5px;color:var(--teks2)}
+.tiket-bawah{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
+.tag-Baru{background:var(--biru-bg);color:#1e40af}
+.tag-Ditugaskan{background:var(--biru-bg);color:#1e40af}
+.tag-Diproses{background:var(--oranye-bg);color:#9a3412}
+.tag-Menunggu{background:var(--abu-bg);color:#374151}
+.tag-Selesai{background:var(--hijau-ok-bg);color:#166534}
+.tag-Ditolak{background:var(--merah-bg);color:#991b1b}
+.tag-Kritis{background:var(--merah-bg);color:#991b1b}
+.tag-Tinggi{background:var(--oranye-bg);color:#9a3412}
+.tag-Normal{background:var(--abu-bg);color:#374151}
+.tag-Rendah{background:var(--abu-bg);color:#6b7280}
+.tag-netral{background:var(--abu-bg);color:#374151}
+
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat div{background:var(--putih);border:1px solid var(--garis);border-radius:10px;
+          padding:11px 8px;text-align:center}
+.stat b{display:block;font-size:21px;color:var(--hijau);line-height:1.2}
+.stat span{font-size:11px;color:var(--teks2)}
+.stat .bahaya b{color:var(--merah)}
+
+.saring{display:flex;gap:8px;margin-bottom:12px}
+.saring select,.saring input{font-size:14px;padding:9px 10px}
+
+.kosong{text-align:center;padding:44px 20px;color:var(--teks2);font-size:14px}
+.memuat{text-align:center;padding:30px;color:var(--teks2);font-size:14px}
+
+.tirai{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;
+       display:flex;align-items:flex-end;justify-content:center}
+.lembar{background:var(--putih);width:100%;max-width:760px;border-radius:16px 16px 0 0;
+        padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom));
+        max-height:90vh;overflow-y:auto}
+.lembar-atas{display:flex;justify-content:space-between;align-items:flex-start;
+             gap:10px;margin-bottom:14px}
+.btn-tutup{background:var(--abu-bg);border:0;width:32px;height:32px;border-radius:50%;
+           font-size:19px;line-height:1;cursor:pointer;color:var(--teks2);flex-shrink:0}
+.baris{display:flex;padding:8px 0;border-bottom:1px solid var(--garis);font-size:14px;gap:12px}
+.baris span:first-child{color:var(--teks2);width:96px;flex-shrink:0}
+.baris span:last-child{flex:1;word-break:break-word}
+.catatan{background:var(--bg);border-radius:9px;padding:11px;font-size:13.5px;
+         white-space:pre-wrap;margin-top:10px;border:1px solid var(--garis)}
+
+.fab{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));
+     width:56px;height:56px;border-radius:50%;background:var(--hijau);color:#fff;
+     border:0;font-size:28px;line-height:1;cursor:pointer;z-index:40;
+     box-shadow:0 4px 14px rgba(15,118,110,.4)}
+
+.kaki{text-align:center;font-size:12px;color:var(--teks2);padding:8px 16px 0}
+</style>
+</head>
+<body>
+
+<!-- ============ LAYAR MASUK ============ -->
+<div id="layarMasuk">
+  <header><h1>Helpdesk IT<span class="sub">Permintaan layanan teknologi informasi</span></h1></header>
+  <main>
+    <div class="tab">
+      <button id="tabPegawai" class="aktif" onclick="gantiTab('pegawai')">Pegawai</button>
+      <button id="tabPetugas" onclick="gantiTab('petugas')">Petugas IT</button>
+    </div>
+
+    <div id="pesanMasuk"></div>
+
+    <!-- Pegawai -->
+    <div id="panelPegawai" class="kartu">
+      <h2>Masuk dengan NIP</h2>
+      <div class="grup">
+        <label for="inNip">NIP / Nomor Pegawai</label>
+        <input id="inNip" inputmode="numeric" autocomplete="off" placeholder="Contoh: 198706142010">
+        <div class="bantuan">Belum pernah pakai? Isi NIP lalu tekan Masuk, nanti diminta melengkapi data.</div>
+      </div>
+      <button class="btn" onclick="masukPegawai()">Masuk</button>
+    </div>
+
+    <!-- Pendaftaran -->
+    <div id="panelDaftar" class="kartu sembunyi">
+      <h2>Lengkapi data Anda</h2>
+      <div class="grup">
+        <label for="inNama">Nama lengkap</label>
+        <input id="inNama" autocomplete="name" placeholder="Nama sesuai kepegawaian">
+      </div>
+      <div class="grup">
+        <label for="inUnit">Unit / Ruangan</label>
+        <select id="inUnit"></select>
+      </div>
+      <div class="grup">
+        <label for="inHp">Nomor WhatsApp</label>
+        <input id="inHp" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx">
+        <div class="bantuan">Dipakai tim IT untuk menghubungi Anda saat menangani tiket.</div>
+      </div>
+      <button class="btn" onclick="daftarPegawai()">Daftar &amp; Masuk</button>
+      <button class="btn btn-alt btn-kecil" style="margin-top:9px;width:100%"
+              onclick="batalDaftar()">Kembali</button>
+    </div>
+
+    <!-- Petugas -->
+    <div id="panelPetugas" class="kartu sembunyi">
+      <h2>Masuk petugas IT</h2>
+      <div class="grup">
+        <label for="inUser">Username</label>
+        <input id="inUser" autocomplete="username" autocapitalize="none" placeholder="username">
+      </div>
+      <div class="grup">
+        <label for="inPin">PIN</label>
+        <input id="inPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN">
+      </div>
+      <button class="btn" onclick="masukPetugas()">Masuk</button>
+    </div>
+
+    <p class="kaki">Jangan lampirkan data identitas pasien di dalam tiket.</p>
+  </main>
+</div>
+
+<!-- ============ LAYAR PEGAWAI ============ -->
+<div id="layarPegawai" class="sembunyi">
+  <header>
+    <h1>Tiket Saya<span class="sub" id="infoPegawai"></span></h1>
+    <button class="btn-keluar" onclick="keluar()">Keluar</button>
+  </header>
+  <main>
+    <div id="pesanPegawai"></div>
+    <div id="daftarTiketSaya"><div class="memuat">Memuat…</div></div>
+  </main>
+  <button class="fab" onclick="bukaFormTiket()" aria-label="Buat tiket baru">+</button>
+</div>
+
+<!-- ============ LAYAR PETUGAS ============ -->
+<div id="layarPetugas" class="sembunyi">
+  <header>
+    <h1>Antrian Tiket<span class="sub" id="infoPetugas"></span></h1>
+    <button class="btn-keluar" onclick="keluar()">Keluar</button>
+  </header>
+  <main>
+    <div class="stat" id="statistik"></div>
+    <div class="saring">
+      <select id="saringStatus" onchange="muatSemuaTiket()"></select>
+      <input id="saringCari" placeholder="Cari…" oninput="tundaCari()">
+    </div>
+    <div id="pesanPetugas"></div>
+    <div id="daftarSemuaTiket"><div class="memuat">Memuat…</div></div>
+  </main>
+</div>
+
+<!-- ============ LEMBAR: FORM TIKET ============ -->
+<div id="tiraiForm" class="tirai sembunyi" onclick="if(event.target===this)tutupForm()">
+  <div class="lembar">
+    <div class="lembar-atas">
+      <h2 style="margin:0">Buat tiket baru</h2>
+      <button class="btn-tutup" onclick="tutupForm()" aria-label="Tutup">&times;</button>
+    </div>
+    <div id="pesanForm"></div>
+    <div class="grup">
+      <label for="fKategori">Kategori masalah</label>
+      <select id="fKategori"></select>
+    </div>
+    <div class="grup">
+      <label for="fJudul">Ringkasan masalah</label>
+      <input id="fJudul" maxlength="90" placeholder="Contoh: Printer poli anak tidak bisa cetak">
+    </div>
+    <div class="grup">
+      <label for="fDeskripsi">Penjelasan detail</label>
+      <textarea id="fDeskripsi" placeholder="Sejak kapan? Pesan error apa yang muncul? Nomor aset atau lokasi perangkat?"></textarea>
+    </div>
+    <div class="grup">
+      <label for="fPrioritas">Tingkat gangguan</label>
+      <select id="fPrioritas"></select>
+      <div class="bantuan">Pilih Kritis hanya jika pelayanan pasien benar-benar terhenti.</div>
+    </div>
+    <button class="btn" id="btnKirim" onclick="kirimTiket()">Kirim Tiket</button>
+  </div>
+</div>
+
+<!-- ============ LEMBAR: DETAIL TIKET ============ -->
+<div id="tiraiDetail" class="tirai sembunyi" onclick="if(event.target===this)tutupDetail()">
+  <div class="lembar">
+    <div class="lembar-atas">
+      <h2 style="margin:0" id="detailJudul">Detail tiket</h2>
+      <button class="btn-tutup" onclick="tutupDetail()" aria-label="Tutup">&times;</button>
+    </div>
+    <div id="pesanDetail"></div>
+    <div id="detailIsi"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  GANTI BARIS INI dengan URL Web App Apps Script Anda
+// ============================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbx2zFjgk1qdHKv-z7oQSRho6AUaBixfvBHereJcCW09FJqTwQMU_L4WerY2d3O0H7Pk/exec';
+
+let sesi = null;
+let konfig = null;
+let tiketTerpilih = null;
+let jedaCari = null;
+
+// ---------- Utilitas ----------
+const $ = function (id) { return document.getElementById(id); };
+
+function tampil(id, tampak) {
+  $(id).classList.toggle('sembunyi', !tampak);
+}
+
+function pesan(wadah, teks, jenis) {
+  $(wadah).innerHTML = teks
+    ? '<div class="pesan ' + (jenis || 'info') + '">' + aman(teks) + '</div>'
+    : '';
+}
+
+function aman(t) {
+  return String(t === null || t === undefined ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function isiPilihan(id, daftar, terpilih) {
+  $(id).innerHTML = daftar.map(function (v) {
+    return '<option value="' + aman(v) + '"' +
+           (v === terpilih ? ' selected' : '') + '>' + aman(v) + '</option>';
+  }).join('');
+}
+
+function tglLokal(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso);
+  const b = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return d.getDate() + ' ' + b[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+         ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+
+function kelasTag(v) {
+  return 'tag-' + String(v).split(' ')[0];
+}
+
+// ---------- Panggil API ----------
+async function api(aksi, data) {
+  if (API_URL.indexOf('GANTI') === 0) {
+    return { ok: false, pesan: 'API_URL belum diisi di index.html.' };
+  }
+  const isi = Object.assign({ aksi: aksi }, data || {});
+  if (sesi && sesi.token) isi.token = sesi.token;
+
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      // text/plain menghindari preflight CORS yang ditolak Apps Script
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(isi),
+      redirect: 'follow'
+    });
+    const hasil = await r.json();
+    if (hasil.kode === 'SESI_HABIS') {
+      keluar();
+      pesan('pesanMasuk', 'Sesi berakhir. Silakan masuk lagi.', 'info');
+    }
+    return hasil;
+  } catch (e) {
+    return { ok: false, pesan: 'Tidak dapat terhubung. Periksa koneksi internet Anda.' };
+  }
+}
+
+// ---------- Tab masuk ----------
+function gantiTab(mana) {
+  const pegawai = mana === 'pegawai';
+  $('tabPegawai').classList.toggle('aktif', pegawai);
+  $('tabPetugas').classList.toggle('aktif', !pegawai);
+  tampil('panelPegawai', pegawai);
+  tampil('panelPetugas', !pegawai);
+  tampil('panelDaftar', false);
+  pesan('pesanMasuk', '');
+}
+
+function batalDaftar() {
+  tampil('panelDaftar', false);
+  tampil('panelPegawai', true);
+  pesan('pesanMasuk', '');
+}
+
+// ---------- Masuk ----------
+async function masukPegawai() {
+  const nip = $('inNip').value.trim();
+  if (!nip) return pesan('pesanMasuk', 'NIP wajib diisi.', 'salah');
+
+  pesan('pesanMasuk', 'Memeriksa…', 'info');
+  const h = await api('loginPegawai', { nip: nip });
+
+  if (h.ok) return mulaiSesi(h);
+
+  if (h.kode === 'BELUM_TERDAFTAR') {
+    pesan('pesanMasuk', 'NIP belum terdaftar. Lengkapi data berikut sekali saja.', 'info');
+    tampil('panelPegawai', false);
+    tampil('panelDaftar', true);
+    if (konfig) isiPilihan('inUnit', konfig.unit);
+    return;
+  }
+  pesan('pesanMasuk', h.pesan, 'salah');
+}
+
+async function daftarPegawai() {
+  const data = {
+    nip:  $('inNip').value.trim(),
+    nama: $('inNama').value.trim(),
+    unit: $('inUnit').value,
+    hp:   $('inHp').value.trim()
+  };
+  if (!data.nama) return pesan('pesanMasuk', 'Nama lengkap wajib diisi.', 'salah');
+
+  pesan('pesanMasuk', 'Mendaftarkan…', 'info');
+  const h = await api('daftarPegawai', data);
+  h.ok ? mulaiSesi(h) : pesan('pesanMasuk', h.pesan, 'salah');
+}
+
+async function masukPetugas() {
+  const username = $('inUser').value.trim();
+  const pin = $('inPin').value.trim();
+  if (!username || !pin) return pesan('pesanMasuk', 'Username dan PIN wajib diisi.', 'salah');
+
+  pesan('pesanMasuk', 'Memeriksa…', 'info');
+  const h = await api('loginPetugas', { username: username, pin: pin });
+  if (h.ok) { $('inPin').value = ''; mulaiSesi(h); }
+  else pesan('pesanMasuk', h.pesan, 'salah');
+}
+
+function mulaiSesi(h) {
+  sesi = { token: h.token, profil: h.profil };
+  try { localStorage.setItem('sesiHelpdesk', JSON.stringify(sesi)); } catch (e) {}
+  pesan('pesanMasuk', '');
+  bukaLayarUtama();
+}
+
+function keluar() {
+  sesi = null;
+  try { localStorage.removeItem('sesiHelpdesk'); } catch (e) {}
+  tampil('layarPegawai', false);
+  tampil('layarPetugas', false);
+  tampil('layarMasuk', true);
+  $('inPin').value = '';
+}
+
+function bukaLayarUtama() {
+  tampil('layarMasuk', false);
+  const p = sesi.profil;
+
+  if (p.peran === 'petugas') {
+    tampil('layarPetugas', true);
+    $('infoPetugas').textContent = p.nama;
+    isiPilihan('saringStatus',
+      ['Terbuka', 'Semua'].concat(konfig ? konfig.status : []), 'Terbuka');
+    muatStatistik();
+    muatSemuaTiket();
+  } else {
+    tampil('layarPegawai', true);
+    $('infoPegawai').textContent = p.nama + ' · ' + p.unit;
+    muatTiketSaya();
+  }
+}
+
+// ---------- Daftar tiket ----------
+function kartuTiket(t, tampilkanPelapor) {
+  return '<div class="tiket" onclick="bukaDetail(\'' + aman(t.id) + '\')">' +
+    '<div class="tiket-atas">' +
+      '<span class="tiket-id">' + aman(t.id) + '</span>' +
+      '<span class="tag ' + kelasTag(t.status) + '">' + aman(t.status) + '</span>' +
+    '</div>' +
+    '<div class="tiket-judul">' + aman(t.judul) + '</div>' +
+    '<div class="tiket-meta">' +
+      (tampilkanPelapor ? aman(t.nama) + ' · ' + aman(t.unit) + ' · ' : '') +
+      tglLokal(t.dibuat) +
+    '</div>' +
+    '<div class="tiket-bawah">' +
+      '<span class="tag ' + kelasTag(t.prioritas) + '">' + aman(t.prioritas) + '</span>' +
+      '<span class="tag tag-netral">' + aman(t.kategori) + '</span>' +
+      (t.teknisi ? '<span class="tag tag-netral">' + aman(t.teknisi) + '</span>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+async function muatTiketSaya() {
+  $('daftarTiketSaya').innerHTML = '<div class="memuat">Memuat…</div>';
+  const h = await api('tiketSaya');
+  if (!h.ok) return pesan('pesanPegawai', h.pesan, 'salah');
+
+  $('daftarTiketSaya').innerHTML = h.tiket.length
+    ? h.tiket.map(function (t) { return kartuTiket(t, false); }).join('')
+    : '<div class="kosong">Belum ada tiket.<br>Tekan tombol + untuk membuat permintaan.</div>';
+}
+
+async function muatSemuaTiket() {
+  $('daftarSemuaTiket').innerHTML = '<div class="memuat">Memuat…</div>';
+  const h = await api('semuaTiket', {
+    status: $('saringStatus').value,
+    cari: $('saringCari').value.trim()
+  });
+  if (!h.ok) return pesan('pesanPetugas', h.pesan, 'salah');
+
+  $('daftarSemuaTiket').innerHTML = h.tiket.length
+    ? h.tiket.map(function (t) { return kartuTiket(t, true); }).join('')
+    : '<div class="kosong">Tidak ada tiket yang cocok.</div>';
+}
+
+function tundaCari() {
+  clearTimeout(jedaCari);
+  jedaCari = setTimeout(muatSemuaTiket, 400);
+}
+
+async function muatStatistik() {
+  const h = await api('statistik');
+  if (!h.ok) return;
+  $('statistik').innerHTML =
+    '<div><b>' + h.terbuka + '</b><span>Terbuka</span></div>' +
+    '<div class="bahaya"><b>' + h.kritis + '</b><span>Kritis</span></div>' +
+    '<div><b>' + h.hariIni + '</b><span>Hari ini</span></div>' +
+    '<div><b>' + h.rataJam + '</b><span>Rata jam</span></div>';
+}
+
+// ---------- Form tiket ----------
+function bukaFormTiket() {
+  pesan('pesanForm', '');
+  $('fJudul').value = '';
+  $('fDeskripsi').value = '';
+  if (konfig) {
+    isiPilihan('fKategori', konfig.kategori);
+    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
+  }
+  tampil('tiraiForm', true);
+}
+
+function tutupForm() { tampil('tiraiForm', false); }
+
+async function kirimTiket() {
+  const data = {
+    kategori:  $('fKategori').value,
+    judul:     $('fJudul').value.trim(),
+    deskripsi: $('fDeskripsi').value.trim(),
+    prioritas: $('fPrioritas').value
+  };
+  if (!data.judul)     return pesan('pesanForm', 'Ringkasan masalah wajib diisi.', 'salah');
+  if (!data.deskripsi) return pesan('pesanForm', 'Penjelasan detail wajib diisi.', 'salah');
+
+  $('btnKirim').disabled = true;
+  pesan('pesanForm', 'Mengirim…', 'info');
+
+  const h = await api('buatTiket', data);
+  $('btnKirim').disabled = false;
+
+  if (!h.ok) return pesan('pesanForm', h.pesan, 'salah');
+
+  tutupForm();
+  pesan('pesanPegawai', h.pesan, 'benar');
+  muatTiketSaya();
+  setTimeout(function () { pesan('pesanPegawai', ''); }, 6000);
+}
+
+// ---------- Detail tiket ----------
+async function bukaDetail(id) {
+  tiketTerpilih = id;
+  pesan('pesanDetail', '');
+  $('detailIsi').innerHTML = '<div class="memuat">Memuat…</div>';
+  tampil('tiraiDetail', true);
+
+  const h = await api('detailTiket', { id: id });
+  if (!h.ok) return pesan('pesanDetail', h.pesan, 'salah');
+
+  const t = h.tiket;
+  $('detailJudul').textContent = t.judul;
+
+  let html =
+    baris('ID', t.id) +
+    baris('Status', '<span class="tag ' + kelasTag(t.status) + '">' + aman(t.status) + '</span>') +
+    baris('Prioritas', '<span class="tag ' + kelasTag(t.prioritas) + '">' + aman(t.prioritas) + '</span>') +
+    baris('Kategori', aman(t.kategori)) +
+    baris('Pelapor', aman(t.nama) + ' (' + aman(t.nip) + ')') +
+    baris('Unit', aman(t.unit)) +
+    (t.hp ? baris('No HP', aman(t.hp)) : '') +
+    baris('Dibuat', tglLokal(t.dibuat)) +
+    (t.teknisi ? baris('Teknisi', aman(t.teknisi)) : '') +
+    (t.selesai ? baris('Selesai', tglLokal(t.selesai) + ' (' + t.durasi + ' jam)') : '') +
+    '<div style="margin-top:12px"><label>Penjelasan</label>' +
+    '<div class="catatan">' + aman(t.deskripsi) + '</div></div>' +
+    (t.catatan ? '<div style="margin-top:12px"><label>Catatan tim IT</label>' +
+                 '<div class="catatan">' + aman(t.catatan) + '</div></div>' : '');
+
+  if (sesi.profil.peran === 'petugas') {
+    html += '<div style="margin-top:18px;border-top:1px solid var(--garis);padding-top:16px">' +
+      '<h2>Perbarui tiket</h2>' +
+      '<div class="grup"><label for="uStatus">Status</label><select id="uStatus"></select></div>' +
+      '<div class="grup"><label for="uTeknisi">Teknisi penanggung jawab</label><select id="uTeknisi"></select></div>' +
+      '<div class="grup"><label for="uPrioritas">Prioritas</label><select id="uPrioritas"></select></div>' +
+      '<div class="grup"><label for="uCatatan">Tambah catatan</label>' +
+      '<textarea id="uCatatan" style="min-height:80px" placeholder="Tindakan yang dilakukan…"></textarea></div>' +
+      '<button class="btn" id="btnSimpan" onclick="simpanPerubahan()">Simpan Perubahan</button>' +
+      '</div>';
+  }
+
+  if (h.riwayat && h.riwayat.length) {
+    html += '<div style="margin-top:18px"><label>Riwayat</label>' +
+      h.riwayat.map(function (r) {
+        return '<div class="baris"><span>' + tglLokal(r.waktu) + '</span>' +
+               '<span>' + aman(r.oleh) + ' — ' + aman(r.detail || r.aksi) + '</span></div>';
+      }).join('') + '</div>';
+  }
+
+  $('detailIsi').innerHTML = html;
+
+  if (sesi.profil.peran === 'petugas' && konfig) {
+    isiPilihan('uStatus', konfig.status, t.status);
+    isiPilihan('uTeknisi', [''].concat(konfig.teknisi), t.teknisi);
+    isiPilihan('uPrioritas', konfig.prioritas, t.prioritas);
+  }
+}
+
+function baris(k, v) {
+  return '<div class="baris"><span>' + aman(k) + '</span><span>' + v + '</span></div>';
+}
+
+function tutupDetail() {
+  tampil('tiraiDetail', false);
+  tiketTerpilih = null;
+}
+
+async function simpanPerubahan() {
+  $('btnSimpan').disabled = true;
+  pesan('pesanDetail', 'Menyimpan…', 'info');
+
+  const h = await api('updateTiket', {
+    id: tiketTerpilih,
+    status: $('uStatus').value,
+    teknisi: $('uTeknisi').value,
+    prioritas: $('uPrioritas').value,
+    catatan: $('uCatatan').value.trim()
+  });
+
+  $('btnSimpan').disabled = false;
+  if (!h.ok) return pesan('pesanDetail', h.pesan, 'salah');
+
+  tutupDetail();
+  pesan('pesanPetugas', h.pesan, 'benar');
+  muatStatistik();
+  muatSemuaTiket();
+  setTimeout(function () { pesan('pesanPetugas', ''); }, 5000);
+}
+
+// ---------- Mulai ----------
+(async function mulai() {
+  const h = await api('konfigurasi');
+  if (h.ok) {
+    konfig = h;
+    isiPilihan('inUnit', konfig.unit);
+    isiPilihan('fKategori', konfig.kategori);
+    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
+  } else {
+    pesan('pesanMasuk', h.pesan, 'salah');
+  }
+
+  try {
+    const tersimpan = localStorage.getItem('sesiHelpdesk');
+    if (tersimpan) {
+      sesi = JSON.parse(tersimpan);
+      const cek = await api(sesi.profil.peran === 'petugas' ? 'statistik' : 'tiketSaya');
+      if (cek.ok) bukaLayarUtama(); else keluar();
+    }
+  } catch (e) { keluar(); }
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
