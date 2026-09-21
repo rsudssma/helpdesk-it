@@ -262,6 +262,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbx2zFjgk1qdHKv-z7oQSRho
 
 let sesi = null;
 let konfig = null;
+let konfigSedangDiambil = null;
 let tiketTerpilih = null;
 let jedaCari = null;
 
@@ -331,6 +332,30 @@ async function api(aksi, data) {
   }
 }
 
+// ---------- Konfigurasi (unit, kategori, dll) ----------
+// Diambil sekali lalu disimpan. Kalau server lambat atau gagal,
+// setiap bagian yang butuh akan menunggu / mencoba lagi di sini.
+function ambilKonfig() {
+  if (konfig) return Promise.resolve(konfig);
+  if (konfigSedangDiambil) return konfigSedangDiambil;
+
+  konfigSedangDiambil = (async function () {
+    let h = await api('konfigurasi');
+    if (!h.ok) {
+      await new Promise(function (r) { setTimeout(r, 1500); });
+      h = await api('konfigurasi');
+    }
+    konfigSedangDiambil = null;
+    if (!h.ok) throw new Error(h.pesan || 'Gagal memuat daftar pilihan.');
+    konfig = h;
+    isiPilihan('inUnit', konfig.unit);
+    isiPilihan('fKategori', konfig.kategori);
+    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
+    return konfig;
+  })();
+  return konfigSedangDiambil;
+}
+
 // ---------- Tab masuk ----------
 function gantiTab(mana) {
   const pegawai = mana === 'pegawai';
@@ -359,10 +384,17 @@ async function masukPegawai() {
   if (h.ok) return mulaiSesi(h);
 
   if (h.kode === 'BELUM_TERDAFTAR') {
+    pesan('pesanMasuk', 'Menyiapkan formulir…', 'info');
+    try {
+      await ambilKonfig();
+    } catch (e) {
+      return pesan('pesanMasuk',
+        'Daftar unit gagal dimuat (' + e.message + '). Periksa koneksi, lalu tekan Masuk sekali lagi.',
+        'salah');
+    }
     pesan('pesanMasuk', 'NIP belum terdaftar. Lengkapi data berikut sekali saja.', 'info');
     tampil('panelPegawai', false);
     tampil('panelDaftar', true);
-    if (konfig) isiPilihan('inUnit', konfig.unit);
     return;
   }
   pesan('pesanMasuk', h.pesan, 'salah');
@@ -376,6 +408,7 @@ async function daftarPegawai() {
     hp:   $('inHp').value.trim()
   };
   if (!data.nama) return pesan('pesanMasuk', 'Nama lengkap wajib diisi.', 'salah');
+  if (!data.unit) return pesan('pesanMasuk', 'Unit / ruangan wajib dipilih.', 'salah');
 
   pesan('pesanMasuk', 'Mendaftarkan…', 'info');
   const h = await api('daftarPegawai', data);
@@ -416,8 +449,11 @@ function bukaLayarUtama() {
   if (p.peran === 'petugas') {
     tampil('layarPetugas', true);
     $('infoPetugas').textContent = p.nama;
-    isiPilihan('saringStatus',
-      ['Terbuka', 'Semua'].concat(konfig ? konfig.status : []), 'Terbuka');
+    isiPilihan('saringStatus', ['Terbuka', 'Semua'], 'Terbuka');
+    ambilKonfig().then(function (k) {
+      const pilihan = $('saringStatus').value;
+      isiPilihan('saringStatus', ['Terbuka', 'Semua'].concat(k.status), pilihan);
+    }).catch(function () {});
     muatStatistik();
     muatSemuaTiket();
   } else {
@@ -486,15 +522,27 @@ async function muatStatistik() {
 }
 
 // ---------- Form tiket ----------
-function bukaFormTiket() {
+async function bukaFormTiket() {
   pesan('pesanForm', '');
   $('fJudul').value = '';
   $('fDeskripsi').value = '';
-  if (konfig) {
-    isiPilihan('fKategori', konfig.kategori);
-    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
-  }
   tampil('tiraiForm', true);
+
+  if (!konfig) {
+    $('btnKirim').disabled = true;
+    pesan('pesanForm', 'Memuat pilihan kategori…', 'info');
+    try {
+      await ambilKonfig();
+    } catch (e) {
+      pesan('pesanForm', 'Pilihan kategori gagal dimuat (' + e.message +
+        '). Tutup formulir ini lalu coba lagi.', 'salah');
+      return;
+    }
+    pesan('pesanForm', '');
+    $('btnKirim').disabled = false;
+  }
+  isiPilihan('fKategori', konfig.kategori);
+  isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
 }
 
 function tutupForm() { tampil('tiraiForm', false); }
@@ -574,10 +622,18 @@ async function bukaDetail(id) {
 
   $('detailIsi').innerHTML = html;
 
-  if (sesi.profil.peran === 'petugas' && konfig) {
-    isiPilihan('uStatus', konfig.status, t.status);
-    isiPilihan('uTeknisi', [''].concat(konfig.teknisi), t.teknisi);
-    isiPilihan('uPrioritas', konfig.prioritas, t.prioritas);
+  if (sesi.profil.peran === 'petugas') {
+    $('btnSimpan').disabled = true;
+    try {
+      const k = await ambilKonfig();
+      isiPilihan('uStatus', k.status, t.status);
+      isiPilihan('uTeknisi', [''].concat(k.teknisi), t.teknisi);
+      isiPilihan('uPrioritas', k.prioritas, t.prioritas);
+      $('btnSimpan').disabled = false;
+    } catch (e) {
+      pesan('pesanDetail', 'Pilihan status gagal dimuat (' + e.message +
+        '). Tutup lalu buka tiket ini lagi.', 'salah');
+    }
   }
 }
 
@@ -614,15 +670,9 @@ async function simpanPerubahan() {
 
 // ---------- Mulai ----------
 (async function mulai() {
-  const h = await api('konfigurasi');
-  if (h.ok) {
-    konfig = h;
-    isiPilihan('inUnit', konfig.unit);
-    isiPilihan('fKategori', konfig.kategori);
-    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
-  } else {
-    pesan('pesanMasuk', h.pesan, 'salah');
-  }
+  // Mulai ambil daftar pilihan di latar belakang, tanpa menunggu.
+  // Kalau gagal di sini, akan dicoba lagi saat benar-benar dibutuhkan.
+  ambilKonfig().catch(function () {});
 
   try {
     const tersimpan = localStorage.getItem('sesiHelpdesk');

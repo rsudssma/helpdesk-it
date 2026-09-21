@@ -9,7 +9,7 @@
  * pegawai mengambil versi terbaru.
  */
 
-const VERSI = 'helpdesk-v1';
+const VERSI = 'helpdesk-v2';
 
 const CANGKANG = [
   './',
