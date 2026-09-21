@@ -9,7 +9,7 @@
  * pegawai mengambil versi terbaru.
  */
 
-const VERSI = 'helpdesk-v4';
+const VERSI = 'helpdesk-v5';
 
 const CANGKANG = [
   './',
@@ -42,8 +42,8 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   const req = e.request;
 
-  // Panggilan API selalu ke jaringan, tidak pernah dari cache.
-  if (req.method !== 'GET' || req.url.indexOf('script.google.com') !== -1) return;
+  // Panggilan API, Firebase, dan situs lain selalu langsung ke jaringan.
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
   // Halaman: jaringan dulu, cache sebagai cadangan saat offline.
   if (req.mode === 'navigate') {
@@ -57,6 +57,55 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     caches.match(req).then(function (tersimpan) {
       return tersimpan || fetch(req);
+    })
+  );
+});
+
+// ------------------------------------------------------------
+//  NOTIFIKASI
+//  Pesan dikirim Code.gs lewat Firebase dalam bentuk data:
+//  { data: { judul, isi, id } }. Ditampilkan di sini, jadi tetap
+//  muncul walaupun aplikasi sedang tertutup.
+// ------------------------------------------------------------
+
+self.addEventListener('push', function (e) {
+  let p = {};
+  try { p = e.data ? e.data.json() : {}; }
+  catch (x) { p = { data: { isi: e.data ? e.data.text() : '' } }; }
+  const d = p.data || p.notification || p;
+  const id = d.id || '';
+
+  const opsi = {
+    body: d.isi || d.body || '',
+    icon: 'icon-192.png',
+    data: { id: id }
+  };
+  // Kabar baru untuk tiket yang sama menggantikan kabar lamanya
+  if (id) { opsi.tag = id; opsi.renotify = true; }
+
+  e.waitUntil(Promise.all([
+    self.registration.showNotification(d.judul || d.title || 'Helpdesk IT', opsi),
+    // Kalau aplikasi sedang terbuka, segarkan daftarnya
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+      cs.forEach(function (c) { c.postMessage({ tipe: 'segarkan', id: id }); });
+    })
+  ]));
+});
+
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  const id = (e.notification.data || {}).id || '';
+  const tujuan = new URL(id ? './?tiket=' + encodeURIComponent(id) : './', self.registration.scope).href;
+
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+      for (let i = 0; i < cs.length; i++) {
+        if (cs[i].url.indexOf(self.registration.scope) === 0 && 'focus' in cs[i]) {
+          if (id) cs[i].postMessage({ tipe: 'buka', id: id });
+          return cs[i].focus();
+        }
+      }
+      return self.clients.openWindow(tujuan);
     })
   );
 });

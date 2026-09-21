@@ -170,6 +170,12 @@ button{font-family:inherit}
 .fab span{font-size:26px;line-height:1;font-weight:400}
 
 .kaki{text-align:center;font-size:12px;color:var(--teks2);padding:8px 16px 0}
+
+.notif-banner{display:flex;align-items:center;gap:10px;background:#fffbeb;border:1px solid #fde68a;
+              color:#78350f;border-radius:11px;padding:11px 12px;margin-bottom:12px;font-size:13.5px}
+.notif-banner span{flex:1}
+.notif-banner .btn{width:auto;flex-shrink:0}
+.notif-banner .x{background:none;border:0;color:#a16207;font-size:20px;line-height:1;padding:2px 4px;cursor:pointer;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -242,6 +248,7 @@ button{font-family:inherit}
     <button class="btn-keluar" onclick="keluar()">Keluar</button>
   </header>
   <main>
+    <div id="notifPegawai"></div>
     <div id="pesanPegawai"></div>
     <div id="daftarTiketSaya"><div class="memuat">Memuat…</div></div>
   </main>
@@ -255,6 +262,7 @@ button{font-family:inherit}
     <button class="btn-keluar" onclick="keluar()">Keluar</button>
   </header>
   <main>
+    <div id="notifPetugas"></div>
     <div class="stat" id="statistik"></div>
     <div class="saring">
       <select id="saringStatus" onchange="muatSemuaTiket()" aria-label="Saring status"></select>
@@ -306,6 +314,26 @@ button{font-family:inherit}
 //  GANTI BARIS INI dengan URL Web App Apps Script Anda
 // ============================================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbx2zFjgk1qdHKv-z7oQSRho6AUaBixfvBHereJcCW09FJqTwQMU_L4WerY2d3O0H7Pk/exec';
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSy...",
+  authDomain: "helpdesk-it-rsud.firebaseapp.com",
+  projectId: "helpdesk-it-rsud",
+  storageBucket: "helpdesk-it-rsud.firebasestorage.app",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abc123"
+};
+const VAPID_KEY = 'BKx...';
+// ============================================================
+//  NOTIFIKASI (opsional). Isi dari Firebase Console.
+//  Selama dua isian ini kosong, fitur notifikasi disembunyikan.
+//  Keduanya memang boleh terlihat publik; kunci RAHASIA (akun
+//  layanan) disimpan di Apps Script, BUKAN di sini.
+// ============================================================
+const FIREBASE_CONFIG = null;   // ganti null dengan { apiKey: "...", ... }
+const VAPID_KEY = '';           // Web Push certificate (Key pair), diawali "B"
+
+const FB_VERSI = '12.18.0';
 
 let sesi = null;
 let konfig = null;
@@ -489,6 +517,7 @@ function mulaiSesi(h) {
 }
 
 function keluar() {
+  if (sesi) lepasNotif();
   sesi = null;
   try { localStorage.removeItem('sesiHelpdesk'); } catch (e) {}
   tampil('layarPegawai', false);
@@ -500,6 +529,7 @@ function keluar() {
   ['inNip', 'inNama', 'inHp', 'inUnitLain', 'inUser', 'inPin'].forEach(function (id) { $(id).value = ''; });
   if (konfig) isiPilihan('inUnit', konfig.unit, null, 'Pilih unit…');
   tampil('grupUnitLain', false);
+  gambarBannerNotif();
   $('daftarTiketSaya').innerHTML = '';
   $('daftarSemuaTiket').innerHTML = '';
 }
@@ -523,6 +553,8 @@ function bukaLayarUtama() {
     $('infoPegawai').textContent = p.nama + ' · ' + p.unit;
     muatTiketSaya();
   }
+  segarkanNotif();
+  bukaTiketTertunda();
 }
 
 // ---------- Daftar tiket ----------
@@ -1003,6 +1035,149 @@ async function simpanPerubahan() {
   muatStatistik();
   muatSemuaTiket();
   setTimeout(function () { pesan('pesanPetugas', ''); }, 5000);
+}
+
+// ============================================================
+//  NOTIFIKASI
+// ============================================================
+let fbMessaging = null;
+let tiketTertunda = new URLSearchParams(location.search).get('tiket');
+
+function notifSiap() {
+  return !!(FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && VAPID_KEY);
+}
+function notifDidukung() {
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+/** iPhone hanya bisa menerima notifikasi kalau aplikasi sudah di Layar Utama. */
+function iPhoneBelumDipasang() {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const terpasang = window.navigator.standalone === true ||
+                    window.matchMedia('(display-mode: standalone)').matches;
+  return ios && !terpasang;
+}
+
+function muatSkrip(src) {
+  return new Promise(function (ok, gagal) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ok;
+    s.onerror = function () { gagal(new Error('Tidak dapat memuat komponen notifikasi. Periksa internet.')); };
+    document.head.appendChild(s);
+  });
+}
+
+async function ambilTokenFcm() {
+  if (!fbMessaging) {
+    if (!window.firebase || !window.firebase.messaging) {
+      await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-app-compat.js');
+      await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-messaging-compat.js');
+    }
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    fbMessaging = firebase.messaging();
+  }
+  const reg = await navigator.serviceWorker.ready;
+  return fbMessaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+}
+
+/** Mendaftarkan HP ini ke akun yang sedang masuk. Aman diulang. */
+async function daftarkanNotif() {
+  const t = await ambilTokenFcm();
+  if (!t) throw new Error('Firebase tidak memberikan token.');
+  const h = await api('daftarNotif', { fcm: t });
+  if (!h.ok) throw new Error(h.pesan);
+  try { localStorage.setItem('fcmToken', t); } catch (e) {}
+}
+
+function wadahNotif() {
+  return sesi && sesi.profil.peran === 'petugas' ? 'notifPetugas' : 'notifPegawai';
+}
+
+function gambarBannerNotif() {
+  ['notifPegawai', 'notifPetugas'].forEach(function (id) { $(id).innerHTML = ''; });
+  if (!sesi || !notifSiap()) return;
+
+  let ditutup = false;
+  try { ditutup = localStorage.getItem('notifDitutup') === '1'; } catch (e) {}
+  const kotak = function (teks, tombol) {
+    return '<div class="notif-banner"><span>' + aman(teks) + '</span>' +
+      (tombol ? '<button class="btn btn-kecil" id="btnNotif" onclick="aktifkanNotif()">Aktifkan</button>' : '') +
+      '<button class="x" aria-label="Tutup" onclick="tutupBannerNotif()">&times;</button></div>';
+  };
+  const w = $(wadahNotif());
+
+  if (iPhoneBelumDipasang()) {
+    if (!ditutup) w.innerHTML = kotak('Supaya bisa menerima notifikasi di iPhone, buka aplikasi ini di Safari, ' +
+      'tekan tombol Bagikan, pilih "Tambahkan ke Layar Utama", lalu buka dari ikon tersebut.', false);
+    return;
+  }
+  if (!notifDidukung()) return;
+  if (Notification.permission === 'granted') return;
+  if (Notification.permission === 'denied') {
+    if (!ditutup) w.innerHTML = kotak('Notifikasi diblokir di HP ini. Untuk menyalakan, buka pengaturan ' +
+      'aplikasi atau browser, lalu izinkan Notifikasi.', false);
+    return;
+  }
+  w.innerHTML = kotak(sesi.profil.peran === 'petugas'
+    ? 'Aktifkan notifikasi supaya HP Anda berbunyi setiap ada tiket baru.'
+    : 'Aktifkan notifikasi supaya Anda dikabari saat tiket Anda diproses atau selesai.', true);
+}
+
+function tutupBannerNotif() {
+  try { localStorage.setItem('notifDitutup', '1'); } catch (e) {}
+  $(wadahNotif()).innerHTML = '';
+}
+
+async function aktifkanNotif() {
+  const tombol = $('btnNotif');
+  const wadahPesan = sesi.profil.peran === 'petugas' ? 'pesanPetugas' : 'pesanPegawai';
+  if (tombol) { tombol.disabled = true; tombol.textContent = 'Menyiapkan…'; }
+  try {
+    const izin = await Notification.requestPermission();
+    if (izin === 'granted') {
+      await daftarkanNotif();
+      pesan(wadahPesan, 'Notifikasi aktif di HP ini.', 'benar');
+      setTimeout(function () { pesan(wadahPesan, ''); }, 5000);
+    }
+  } catch (e) {
+    pesan(wadahPesan, 'Notifikasi belum bisa diaktifkan: ' + e.message, 'salah');
+  }
+  gambarBannerNotif();
+}
+
+/** Setiap kali masuk: kalau izin sudah ada, daftarkan ulang diam-diam. */
+function segarkanNotif() {
+  gambarBannerNotif();
+  if (notifSiap() && notifDidukung() && !iPhoneBelumDipasang() && Notification.permission === 'granted') {
+    daftarkanNotif().catch(function () {});
+  }
+}
+
+function lepasNotif() {
+  let t = null;
+  try { t = localStorage.getItem('fcmToken'); } catch (e) {}
+  if (t) api('hapusNotif', { fcm: t });
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', function (e) {
+    const d = e.data || {};
+    if (!sesi) return;
+    if (d.tipe === 'segarkan') {
+      if (sesi.profil.peran === 'petugas') { muatStatistik(); muatSemuaTiket(); }
+      else muatTiketSaya();
+    }
+    if (d.tipe === 'buka' && d.id) bukaDetail(d.id);
+  });
+}
+
+function bukaTiketTertunda() {
+  if (!tiketTertunda || !sesi) return;
+  const id = tiketTertunda;
+  tiketTertunda = null;
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  bukaDetail(id);
 }
 
 async function hapusTiket() {
