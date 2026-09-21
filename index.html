@@ -10,11 +10,12 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
-  --hijau:#0f766e; --hijau-gelap:#115e59; --hijau-muda:#ccfbf1;
+  --hijau:#0f766e; --hijau-gelap:#115e59; --hijau-muda:#e6f4f2;
   --teks:#1f2937; --teks2:#6b7280; --garis:#e5e7eb; --bg:#f9fafb; --putih:#fff;
   --merah:#dc2626; --merah-bg:#fee2e2;
   --oranye:#ea580c; --oranye-bg:#ffedd5;
   --biru:#2563eb; --biru-bg:#dbeafe;
+  --ungu-bg:#ede9fe;
   --abu:#6b7280; --abu-bg:#f3f4f6;
   --hijau-ok:#16a34a; --hijau-ok-bg:#dcfce7;
   --r:12px;
@@ -26,23 +27,28 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,san
 
 header{background:var(--hijau);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
        position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px}
-header h1{font-size:17px;margin:0;font-weight:600;flex:1}
-header .sub{font-size:12px;opacity:.85;display:block;font-weight:400}
+header h1{font-size:17px;margin:0;font-weight:600;flex:1;min-width:0}
+header .sub{font-size:12px;opacity:.85;display:block;font-weight:400;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .btn-keluar{background:rgba(255,255,255,.18);border:0;color:#fff;padding:7px 12px;
-            border-radius:8px;font-size:13px;cursor:pointer}
+            border-radius:8px;font-size:13px;cursor:pointer;flex-shrink:0}
 
 main{padding:16px;max-width:760px;margin:0 auto;padding-bottom:96px}
 
 .kartu{background:var(--putih);border:1px solid var(--garis);border-radius:var(--r);
        padding:16px;margin-bottom:12px}
 h2{font-size:16px;margin:0 0 14px;font-weight:600}
+h3{font-size:13px;margin:18px 0 8px;font-weight:600;color:var(--teks2);
+   text-transform:uppercase;letter-spacing:.04em}
 label{display:block;font-size:13px;font-weight:500;margin:0 0 5px;color:var(--teks2)}
-.grup{margin-bottom:14px}
+label .wajib{color:var(--merah)}
+.grup{margin-bottom:16px}
 input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--garis);
   border-radius:9px;font-size:16px;font-family:inherit;background:var(--putih);color:var(--teks)}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--hijau);outline-offset:-1px;border-color:var(--hijau)}
-textarea{min-height:110px;resize:vertical}
+textarea{min-height:100px;resize:vertical}
 .bantuan{font-size:12px;color:var(--teks2);margin-top:5px}
+.bantuan a{color:var(--hijau);font-weight:600}
 
 button{font-family:inherit}
 .btn{width:100%;padding:13px;background:var(--hijau);color:#fff;border:0;
@@ -50,14 +56,16 @@ button{font-family:inherit}
 .btn:active{background:var(--hijau-gelap)}
 .btn:disabled{opacity:.55}
 .btn-alt{background:var(--putih);color:var(--hijau);border:1.5px solid var(--hijau)}
-.btn-kecil{width:auto;padding:9px 14px;font-size:13px}
+.btn-kecil{width:auto;padding:8px 13px;font-size:13px}
+.tautan-btn{background:none;border:0;color:var(--hijau);font-size:14px;font-weight:600;
+            padding:4px 0;cursor:pointer}
 
 .tab{display:flex;gap:6px;background:var(--abu-bg);padding:4px;border-radius:10px;margin-bottom:14px}
 .tab button{flex:1;padding:9px;border:0;background:transparent;border-radius:7px;
             font-size:14px;font-weight:500;color:var(--teks2);cursor:pointer}
 .tab button.aktif{background:var(--putih);color:var(--hijau);font-weight:600}
 
-.pesan{padding:11px 13px;border-radius:9px;font-size:14px;margin-bottom:12px}
+.pesan{padding:11px 13px;border-radius:9px;font-size:14px;margin-bottom:12px;white-space:pre-line}
 .pesan.salah{background:var(--merah-bg);color:#991b1b}
 .pesan.benar{background:var(--hijau-ok-bg);color:#166534}
 .pesan.info{background:var(--biru-bg);color:#1e40af}
@@ -65,33 +73,33 @@ button{font-family:inherit}
 .tiket{background:var(--putih);border:1px solid var(--garis);border-radius:var(--r);
        padding:14px;margin-bottom:10px;cursor:pointer}
 .tiket:active{background:var(--bg)}
-.tiket-atas{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
+.tiket-atas{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .tiket-id{font-size:11px;color:var(--teks2);font-family:ui-monospace,monospace}
-.tiket-judul{font-weight:600;margin-bottom:5px;font-size:15px}
+.tiket-judul{font-weight:600;margin-bottom:4px;font-size:15px;word-break:break-word}
 .tiket-meta{font-size:12.5px;color:var(--teks2)}
 .tiket-bawah{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 
-.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600}
-.tag-Baru{background:var(--biru-bg);color:#1e40af}
-.tag-Ditugaskan{background:var(--biru-bg);color:#1e40af}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag-Baru,.tag-Ditugaskan{background:var(--biru-bg);color:#1e40af}
 .tag-Diproses{background:var(--oranye-bg);color:#9a3412}
-.tag-Menunggu{background:var(--abu-bg);color:#374151}
+.tag-Menunggu,.tag-Diteruskan{background:var(--abu-bg);color:#374151}
 .tag-Selesai{background:var(--hijau-ok-bg);color:#166534}
-.tag-Ditolak{background:var(--merah-bg);color:#991b1b}
-.tag-Kritis{background:var(--merah-bg);color:#991b1b}
+.tag-Ditolak,.tag-Kritis{background:var(--merah-bg);color:#991b1b}
 .tag-Tinggi{background:var(--oranye-bg);color:#9a3412}
-.tag-Normal{background:var(--abu-bg);color:#374151}
+.tag-Normal,.tag-netral{background:var(--abu-bg);color:#374151}
 .tag-Rendah{background:var(--abu-bg);color:#6b7280}
-.tag-netral{background:var(--abu-bg);color:#374151}
+.tag-gangguan{background:var(--merah-bg);color:#991b1b}
+.tag-permohonan{background:var(--ungu-bg);color:#5b21b6}
 
 .stat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .stat div{background:var(--putih);border:1px solid var(--garis);border-radius:10px;
-          padding:11px 8px;text-align:center}
+          padding:11px 6px;text-align:center}
 .stat b{display:block;font-size:21px;color:var(--hijau);line-height:1.2}
 .stat span{font-size:11px;color:var(--teks2)}
 .stat .bahaya b{color:var(--merah)}
 
-.saring{display:flex;gap:8px;margin-bottom:12px}
+.saring{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.saring input{grid-column:1 / -1}
 .saring select,.saring input{font-size:14px;padding:9px 10px}
 
 .kosong{text-align:center;padding:44px 20px;color:var(--teks2);font-size:14px}
@@ -101,21 +109,59 @@ button{font-family:inherit}
        display:flex;align-items:flex-end;justify-content:center}
 .lembar{background:var(--putih);width:100%;max-width:760px;border-radius:16px 16px 0 0;
         padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom));
-        max-height:90vh;overflow-y:auto}
+        max-height:92vh;overflow-y:auto}
 .lembar-atas{display:flex;justify-content:space-between;align-items:flex-start;
              gap:10px;margin-bottom:14px}
 .btn-tutup{background:var(--abu-bg);border:0;width:32px;height:32px;border-radius:50%;
            font-size:19px;line-height:1;cursor:pointer;color:var(--teks2);flex-shrink:0}
+
+/* pilih jenis */
+.kelompok-judul{display:flex;align-items:baseline;gap:8px;margin:4px 0 8px}
+.kelompok-judul b{font-size:15px}
+.kelompok-judul span{font-size:12.5px;color:var(--teks2)}
+.pilih-jenis{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.opsi-jenis{display:block;width:100%;text-align:left;background:var(--putih);
+            border:1px solid var(--garis);border-radius:11px;padding:12px 14px;cursor:pointer;
+            font-family:inherit;color:var(--teks)}
+.opsi-jenis:active{background:var(--bg)}
+.opsi-jenis b{display:block;font-size:14.5px;margin-bottom:2px}
+.opsi-jenis span{font-size:12.5px;color:var(--teks2)}
+.opsi-jenis.gangguan{border-left:4px solid var(--merah);border-radius:0 11px 11px 0}
+.opsi-jenis.permohonan{border-left:4px solid #7c3aed;border-radius:0 11px 11px 0}
+
+.keterangan{background:var(--hijau-muda);color:#134e4a;border-radius:9px;padding:11px 13px;
+            font-size:13.5px;margin-bottom:16px}
+
+/* unggah */
+.unggah{border:1.5px dashed #cbd5e1;border-radius:10px;padding:12px;text-align:center}
+.unggah .btn{width:auto;display:inline-block;padding:9px 16px;font-size:14px}
+.pratinjau{display:flex;gap:12px;align-items:center;text-align:left}
+.pratinjau img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--garis);flex-shrink:0}
+.pratinjau .ikon-pdf{width:64px;height:64px;border-radius:8px;background:var(--merah-bg);color:#991b1b;
+                     display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.pratinjau .info{flex:1;min-width:0;font-size:13px}
+.pratinjau .info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* persetujuan */
+.pernyataan{background:var(--bg);border:1px solid var(--garis);border-radius:9px;padding:12px;
+            font-size:13px;white-space:pre-line;max-height:180px;overflow-y:auto;margin-bottom:10px;color:#374151}
+.centang{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--teks);font-weight:500;cursor:pointer}
+.centang input{width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:var(--hijau)}
+
+/* detail */
 .baris{display:flex;padding:8px 0;border-bottom:1px solid var(--garis);font-size:14px;gap:12px}
-.baris span:first-child{color:var(--teks2);width:96px;flex-shrink:0}
-.baris span:last-child{flex:1;word-break:break-word}
+.baris>span:first-child{color:var(--teks2);width:108px;flex-shrink:0}
+.baris>span:last-child{flex:1;word-break:break-word;white-space:pre-line}
 .catatan{background:var(--bg);border-radius:9px;padding:11px;font-size:13.5px;
-         white-space:pre-wrap;margin-top:10px;border:1px solid var(--garis)}
+         white-space:pre-wrap;margin-top:6px;border:1px solid var(--garis);word-break:break-word}
+.lampiran-item{margin-top:10px}
+.lampiran-item img{max-width:100%;border-radius:9px;margin-top:8px;border:1px solid var(--garis)}
 
 .fab{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));
-     width:56px;height:56px;border-radius:50%;background:var(--hijau);color:#fff;
-     border:0;font-size:28px;line-height:1;cursor:pointer;z-index:40;
+     height:56px;border-radius:28px;background:var(--hijau);color:#fff;padding:0 22px 0 18px;
+     border:0;font-size:15px;font-weight:600;cursor:pointer;z-index:40;display:flex;align-items:center;gap:8px;
      box-shadow:0 4px 14px rgba(15,118,110,.4)}
+.fab span{font-size:26px;line-height:1;font-weight:400}
 
 .kaki{text-align:center;font-size:12px;color:var(--teks2);padding:8px 16px 0}
 </style>
@@ -124,7 +170,7 @@ button{font-family:inherit}
 
 <!-- ============ LAYAR MASUK ============ -->
 <div id="layarMasuk">
-  <header><h1>Helpdesk IT<span class="sub">Permintaan layanan teknologi informasi</span></h1></header>
+  <header><h1>Helpdesk IT<span class="sub">Instalasi Teknologi Informasi</span></h1></header>
   <main>
     <div class="tab">
       <button id="tabPegawai" class="aktif" onclick="gantiTab('pegawai')">Pegawai</button>
@@ -133,27 +179,29 @@ button{font-family:inherit}
 
     <div id="pesanMasuk"></div>
 
-    <!-- Pegawai -->
     <div id="panelPegawai" class="kartu">
-      <h2>Masuk dengan NIP</h2>
+      <h2>Masuk</h2>
       <div class="grup">
-        <label for="inNip">NIP / Nomor Pegawai</label>
-        <input id="inNip" inputmode="numeric" autocomplete="off" placeholder="Contoh: 198706142010">
-        <div class="bantuan">Belum pernah pakai? Isi NIP lalu tekan Masuk, nanti diminta melengkapi data.</div>
+        <label for="inNip">NIP (ASN) atau NIK KTP (Non-ASN)</label>
+        <input id="inNip" inputmode="numeric" autocomplete="off" placeholder="18 digit NIP atau 16 digit NIK">
+        <div class="bantuan">Belum pernah pakai? Isi nomor Anda lalu tekan Masuk, nanti diminta melengkapi data sekali saja. Nomor ini tidak ditampilkan ke pegawai lain.</div>
       </div>
       <button class="btn" onclick="masukPegawai()">Masuk</button>
     </div>
 
-    <!-- Pendaftaran -->
     <div id="panelDaftar" class="kartu sembunyi">
       <h2>Lengkapi data Anda</h2>
       <div class="grup">
-        <label for="inNama">Nama lengkap</label>
+        <label for="inNama">Nama lengkap + gelar</label>
         <input id="inNama" autocomplete="name" placeholder="Nama sesuai kepegawaian">
       </div>
       <div class="grup">
-        <label for="inUnit">Unit / Ruangan</label>
-        <select id="inUnit"></select>
+        <label for="inUnit">Unit / instalasi</label>
+        <select id="inUnit" onchange="tampil('grupUnitLain', this.value === 'Lainnya')"></select>
+      </div>
+      <div class="grup sembunyi" id="grupUnitLain">
+        <label for="inUnitLain">Sebutkan unit / instalasi</label>
+        <input id="inUnitLain" maxlength="80" placeholder="Contoh: Poli Gigi">
       </div>
       <div class="grup">
         <label for="inHp">Nomor WhatsApp</label>
@@ -161,11 +209,9 @@ button{font-family:inherit}
         <div class="bantuan">Dipakai tim IT untuk menghubungi Anda saat menangani tiket.</div>
       </div>
       <button class="btn" onclick="daftarPegawai()">Daftar &amp; Masuk</button>
-      <button class="btn btn-alt btn-kecil" style="margin-top:9px;width:100%"
-              onclick="batalDaftar()">Kembali</button>
+      <button class="btn btn-alt" style="margin-top:9px" onclick="batalDaftar()">Kembali</button>
     </div>
 
-    <!-- Petugas -->
     <div id="panelPetugas" class="kartu sembunyi">
       <h2>Masuk petugas IT</h2>
       <div class="grup">
@@ -193,7 +239,7 @@ button{font-family:inherit}
     <div id="pesanPegawai"></div>
     <div id="daftarTiketSaya"><div class="memuat">Memuat…</div></div>
   </main>
-  <button class="fab" onclick="bukaFormTiket()" aria-label="Buat tiket baru">+</button>
+  <button class="fab" onclick="bukaFormTiket()"><span>+</span> Buat tiket</button>
 </div>
 
 <!-- ============ LAYAR PETUGAS ============ -->
@@ -205,40 +251,35 @@ button{font-family:inherit}
   <main>
     <div class="stat" id="statistik"></div>
     <div class="saring">
-      <select id="saringStatus" onchange="muatSemuaTiket()"></select>
-      <input id="saringCari" placeholder="Cari…" oninput="tundaCari()">
+      <select id="saringStatus" onchange="muatSemuaTiket()" aria-label="Saring status"></select>
+      <select id="saringGrup" onchange="muatSemuaTiket()" aria-label="Saring jenis">
+        <option value="Semua">Semua jenis</option>
+        <option value="Lapor Gangguan">Lapor Gangguan</option>
+        <option value="Permohonan">Permohonan</option>
+      </select>
+      <input id="saringCari" placeholder="Cari nama, unit, ID, isi tiket…" oninput="tundaCari()">
     </div>
     <div id="pesanPetugas"></div>
     <div id="daftarSemuaTiket"><div class="memuat">Memuat…</div></div>
   </main>
 </div>
 
-<!-- ============ LEMBAR: FORM TIKET ============ -->
+<!-- ============ LEMBAR: BUAT TIKET ============ -->
 <div id="tiraiForm" class="tirai sembunyi" onclick="if(event.target===this)tutupForm()">
   <div class="lembar">
     <div class="lembar-atas">
-      <h2 style="margin:0">Buat tiket baru</h2>
+      <div>
+        <h2 style="margin:0" id="formJudul">Buat tiket baru</h2>
+        <button class="tautan-btn sembunyi" id="btnGantiJenis" onclick="kePilihJenis()">&larr; Ganti jenis</button>
+      </div>
       <button class="btn-tutup" onclick="tutupForm()" aria-label="Tutup">&times;</button>
     </div>
     <div id="pesanForm"></div>
-    <div class="grup">
-      <label for="fKategori">Kategori masalah</label>
-      <select id="fKategori"></select>
+    <div id="langkahPilih"></div>
+    <div id="langkahIsi" class="sembunyi">
+      <div id="isianForm"></div>
+      <button class="btn" id="btnKirim" onclick="kirimTiket()">Kirim</button>
     </div>
-    <div class="grup">
-      <label for="fJudul">Ringkasan masalah</label>
-      <input id="fJudul" maxlength="90" placeholder="Contoh: Printer poli anak tidak bisa cetak">
-    </div>
-    <div class="grup">
-      <label for="fDeskripsi">Penjelasan detail</label>
-      <textarea id="fDeskripsi" placeholder="Sejak kapan? Pesan error apa yang muncul? Nomor aset atau lokasi perangkat?"></textarea>
-    </div>
-    <div class="grup">
-      <label for="fPrioritas">Tingkat gangguan</label>
-      <select id="fPrioritas"></select>
-      <div class="bantuan">Pilih Kritis hanya jika pelayanan pasien benar-benar terhenti.</div>
-    </div>
-    <button class="btn" id="btnKirim" onclick="kirimTiket()">Kirim Tiket</button>
   </div>
 </div>
 
@@ -265,18 +306,17 @@ let konfig = null;
 let konfigSedangDiambil = null;
 let tiketTerpilih = null;
 let jedaCari = null;
+let jenisAktif = null;
+let berkas = {};
 
 // ---------- Utilitas ----------
 const $ = function (id) { return document.getElementById(id); };
 
-function tampil(id, tampak) {
-  $(id).classList.toggle('sembunyi', !tampak);
-}
+function tampil(id, tampak) { $(id).classList.toggle('sembunyi', !tampak); }
 
 function pesan(wadah, teks, jenis) {
   $(wadah).innerHTML = teks
-    ? '<div class="pesan ' + (jenis || 'info') + '">' + aman(teks) + '</div>'
-    : '';
+    ? '<div class="pesan ' + (jenis || 'info') + '">' + aman(teks) + '</div>' : '';
 }
 
 function aman(t) {
@@ -285,11 +325,11 @@ function aman(t) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
-function isiPilihan(id, daftar, terpilih) {
-  $(id).innerHTML = daftar.map(function (v) {
-    return '<option value="' + aman(v) + '"' +
-           (v === terpilih ? ' selected' : '') + '>' + aman(v) + '</option>';
-  }).join('');
+function isiPilihan(id, daftar, terpilih, kosong) {
+  $(id).innerHTML = (kosong ? '<option value="">' + aman(kosong) + '</option>' : '') +
+    daftar.map(function (v) {
+      return '<option value="' + aman(v) + '"' + (v === terpilih ? ' selected' : '') + '>' + aman(v) + '</option>';
+    }).join('');
 }
 
 function tglLokal(iso) {
@@ -301,8 +341,22 @@ function tglLokal(iso) {
          ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
 }
 
-function kelasTag(v) {
-  return 'tag-' + String(v).split(' ')[0];
+function kelasTag(v) { return 'tag-' + String(v).split(' ')[0]; }
+function kelasGrup(g) { return g === 'Permohonan' ? 'permohonan' : 'gangguan'; }
+function rapikanId(v) { return String(v || '').replace(/[\s.'-]/g, ''); }
+
+/** NIK disamarkan, NIP ditampilkan utuh. */
+function samarkan(id) {
+  id = String(id || '');
+  return id.length === 16 ? id.slice(0, 4) + '••••••••' + id.slice(-4) : id;
+}
+
+function ukuranTeks(n) {
+  return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+}
+
+function cariJenis(kode) {
+  return konfig ? konfig.jenis.filter(function (j) { return j.kode === kode; })[0] : null;
 }
 
 // ---------- Panggil API ----------
@@ -332,9 +386,7 @@ async function api(aksi, data) {
   }
 }
 
-// ---------- Konfigurasi (unit, kategori, dll) ----------
-// Diambil sekali lalu disimpan. Kalau server lambat atau gagal,
-// setiap bagian yang butuh akan menunggu / mencoba lagi di sini.
+// ---------- Konfigurasi ----------
 function ambilKonfig() {
   if (konfig) return Promise.resolve(konfig);
   if (konfigSedangDiambil) return konfigSedangDiambil;
@@ -348,15 +400,13 @@ function ambilKonfig() {
     konfigSedangDiambil = null;
     if (!h.ok) throw new Error(h.pesan || 'Gagal memuat daftar pilihan.');
     konfig = h;
-    isiPilihan('inUnit', konfig.unit);
-    isiPilihan('fKategori', konfig.kategori);
-    isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
+    isiPilihan('inUnit', konfig.unit, null, 'Pilih unit…');
     return konfig;
   })();
   return konfigSedangDiambil;
 }
 
-// ---------- Tab masuk ----------
+// ---------- Masuk ----------
 function gantiTab(mana) {
   const pegawai = mana === 'pegawai';
   $('tabPegawai').classList.toggle('aktif', pegawai);
@@ -373,14 +423,12 @@ function batalDaftar() {
   pesan('pesanMasuk', '');
 }
 
-// ---------- Masuk ----------
 async function masukPegawai() {
-  const nip = $('inNip').value.trim();
-  if (!nip) return pesan('pesanMasuk', 'NIP wajib diisi.', 'salah');
+  const nip = rapikanId($('inNip').value);
+  if (!nip) return pesan('pesanMasuk', 'NIP atau NIK wajib diisi.', 'salah');
 
   pesan('pesanMasuk', 'Memeriksa…', 'info');
   const h = await api('loginPegawai', { nip: nip });
-
   if (h.ok) return mulaiSesi(h);
 
   if (h.kode === 'BELUM_TERDAFTAR') {
@@ -389,10 +437,9 @@ async function masukPegawai() {
       await ambilKonfig();
     } catch (e) {
       return pesan('pesanMasuk',
-        'Daftar unit gagal dimuat (' + e.message + '). Periksa koneksi, lalu tekan Masuk sekali lagi.',
-        'salah');
+        'Daftar unit gagal dimuat (' + e.message + '). Periksa koneksi, lalu tekan Masuk sekali lagi.', 'salah');
     }
-    pesan('pesanMasuk', 'NIP belum terdaftar. Lengkapi data berikut sekali saja.', 'info');
+    pesan('pesanMasuk', 'Nomor ini belum terdaftar. Lengkapi data berikut sekali saja.', 'info');
     tampil('panelPegawai', false);
     tampil('panelDaftar', true);
     return;
@@ -401,14 +448,16 @@ async function masukPegawai() {
 }
 
 async function daftarPegawai() {
+  let unit = $('inUnit').value;
+  if (unit === 'Lainnya') unit = $('inUnitLain').value.trim();
   const data = {
-    nip:  $('inNip').value.trim(),
+    nip:  rapikanId($('inNip').value),
     nama: $('inNama').value.trim(),
-    unit: $('inUnit').value,
+    unit: unit,
     hp:   $('inHp').value.trim()
   };
   if (!data.nama) return pesan('pesanMasuk', 'Nama lengkap wajib diisi.', 'salah');
-  if (!data.unit) return pesan('pesanMasuk', 'Unit / ruangan wajib dipilih.', 'salah');
+  if (!data.unit) return pesan('pesanMasuk', 'Unit / instalasi wajib diisi.', 'salah');
 
   pesan('pesanMasuk', 'Mendaftarkan…', 'info');
   const h = await api('daftarPegawai', data);
@@ -438,8 +487,15 @@ function keluar() {
   try { localStorage.removeItem('sesiHelpdesk'); } catch (e) {}
   tampil('layarPegawai', false);
   tampil('layarPetugas', false);
+  tampil('tiraiForm', false);
+  tampil('tiraiDetail', false);
   tampil('layarMasuk', true);
-  $('inPin').value = '';
+  gantiTab('pegawai');
+  ['inNip', 'inNama', 'inHp', 'inUnitLain', 'inUser', 'inPin'].forEach(function (id) { $(id).value = ''; });
+  if (konfig) isiPilihan('inUnit', konfig.unit, null, 'Pilih unit…');
+  tampil('grupUnitLain', false);
+  $('daftarTiketSaya').innerHTML = '';
+  $('daftarSemuaTiket').innerHTML = '';
 }
 
 function bukaLayarUtama() {
@@ -476,8 +532,9 @@ function kartuTiket(t, tampilkanPelapor) {
       tglLokal(t.dibuat) +
     '</div>' +
     '<div class="tiket-bawah">' +
-      '<span class="tag ' + kelasTag(t.prioritas) + '">' + aman(t.prioritas) + '</span>' +
-      '<span class="tag tag-netral">' + aman(t.kategori) + '</span>' +
+      '<span class="tag tag-' + kelasGrup(t.grup) + '">' + aman(t.kategori) + '</span>' +
+      (t.grup !== 'Permohonan' || t.prioritas !== 'Normal'
+        ? '<span class="tag ' + kelasTag(t.prioritas) + '">' + aman(t.prioritas) + '</span>' : '') +
       (t.teknisi ? '<span class="tag tag-netral">' + aman(t.teknisi) + '</span>' : '') +
     '</div>' +
   '</div>';
@@ -490,13 +547,14 @@ async function muatTiketSaya() {
 
   $('daftarTiketSaya').innerHTML = h.tiket.length
     ? h.tiket.map(function (t) { return kartuTiket(t, false); }).join('')
-    : '<div class="kosong">Belum ada tiket.<br>Tekan tombol + untuk membuat permintaan.</div>';
+    : '<div class="kosong">Belum ada tiket.<br>Tekan <b>Buat tiket</b> untuk melapor gangguan atau mengajukan permohonan.</div>';
 }
 
 async function muatSemuaTiket() {
   $('daftarSemuaTiket').innerHTML = '<div class="memuat">Memuat…</div>';
   const h = await api('semuaTiket', {
     status: $('saringStatus').value,
+    grup: $('saringGrup').value,
     cari: $('saringCari').value.trim()
   });
   if (!h.ok) return pesan('pesanPetugas', h.pesan, 'salah');
@@ -521,46 +579,261 @@ async function muatStatistik() {
     '<div><b>' + h.rataJam + '</b><span>Rata jam</span></div>';
 }
 
-// ---------- Form tiket ----------
+// ============================================================
+//  BUAT TIKET
+// ============================================================
 async function bukaFormTiket() {
   pesan('pesanForm', '');
-  $('fJudul').value = '';
-  $('fDeskripsi').value = '';
   tampil('tiraiForm', true);
+  kePilihJenis();
 
   if (!konfig) {
-    $('btnKirim').disabled = true;
-    pesan('pesanForm', 'Memuat pilihan kategori…', 'info');
-    try {
-      await ambilKonfig();
-    } catch (e) {
-      pesan('pesanForm', 'Pilihan kategori gagal dimuat (' + e.message +
-        '). Tutup formulir ini lalu coba lagi.', 'salah');
-      return;
+    $('langkahPilih').innerHTML = '<div class="memuat">Memuat pilihan…</div>';
+    try { await ambilKonfig(); }
+    catch (e) {
+      $('langkahPilih').innerHTML = '';
+      return pesan('pesanForm', 'Pilihan gagal dimuat (' + e.message + '). Tutup lalu coba lagi.', 'salah');
     }
-    pesan('pesanForm', '');
-    $('btnKirim').disabled = false;
   }
-  isiPilihan('fKategori', konfig.kategori);
-  isiPilihan('fPrioritas', konfig.prioritas, 'Normal');
+  gambarPilihJenis();
 }
 
 function tutupForm() { tampil('tiraiForm', false); }
 
+function kePilihJenis() {
+  jenisAktif = null;
+  berkas = {};
+  $('formJudul').textContent = 'Buat tiket baru';
+  tampil('btnGantiJenis', false);
+  tampil('langkahIsi', false);
+  tampil('langkahPilih', true);
+  pesan('pesanForm', '');
+}
+
+function gambarPilihJenis() {
+  const kelompok = [
+    { grup: 'Lapor Gangguan', kelas: 'gangguan', sub: 'ada yang rusak atau error sekarang' },
+    { grup: 'Permohonan', kelas: 'permohonan', sub: 'mengajukan sesuatu' }
+  ];
+  $('langkahPilih').innerHTML = kelompok.map(function (k) {
+    const daftar = konfig.jenis.filter(function (j) { return j.grup === k.grup; });
+    return '<div class="kelompok-judul"><b>' + aman(k.grup) + '</b><span>' + aman(k.sub) + '</span></div>' +
+      '<div class="pilih-jenis">' + daftar.map(function (j) {
+        return '<button class="opsi-jenis ' + k.kelas + '" onclick="pilihJenis(\'' + aman(j.kode) + '\')">' +
+               '<b>' + aman(j.nama) + '</b><span>' + aman(j.ringkas) + '</span></button>';
+      }).join('') + '</div>';
+  }).join('');
+}
+
+function nilaiAwal(f) {
+  const p = sesi.profil;
+  if (f.isiAwal === 'nama') return p.nama || '';
+  if (f.isiAwal === 'hp') return p.hp || '';
+  if (f.isiAwal === 'nipAsn') return String(p.nip || '').length === 18 ? p.nip : '0';
+  return '';
+}
+
+function pilihJenis(kode) {
+  const j = cariJenis(kode);
+  if (!j) return;
+  jenisAktif = j;
+  berkas = {};
+
+  $('formJudul').textContent = j.nama;
+  tampil('btnGantiJenis', true);
+  tampil('langkahPilih', false);
+  tampil('langkahIsi', true);
+  pesan('pesanForm', '');
+
+  let html = j.keterangan ? '<div class="keterangan">' + aman(j.keterangan) + '</div>' : '';
+
+  j.fields.forEach(function (f) {
+    const id = 'f_' + f.id;
+    const bintang = f.wajib ? ' <span class="wajib">*</span>' : '';
+    let bantuan = f.bantuan ? aman(f.bantuan) : '';
+    if (f.tautan) {
+      bantuan += (bantuan ? ' ' : '') + '<a href="' + aman(f.tautan.url) + '" target="_blank" rel="noopener">' +
+                 aman(f.tautan.teks) + '</a>';
+    }
+    const bantuanHtml = bantuan ? '<div class="bantuan">' + bantuan + '</div>' : '';
+
+    if (f.tipe === 'setuju') {
+      html += '<div class="grup"><label>' + aman(f.label) + bintang + '</label>' +
+        '<div class="pernyataan">' + aman(f.pernyataan) + '</div>' +
+        '<label class="centang"><input type="checkbox" id="' + id + '"> <span>' + aman(f.teksSetuju) + '</span></label></div>';
+      return;
+    }
+
+    html += '<div class="grup"><label for="' + id + '">' + aman(f.label) + bintang + '</label>';
+
+    if (f.tipe === 'paragraf') {
+      html += '<textarea id="' + id + '"' + (f.maks ? ' maxlength="' + f.maks + '"' : '') + '></textarea>';
+    } else if (f.tipe === 'pilihan') {
+      html += '<select id="' + id + '"><option value="">Pilih…</option>' +
+        f.pilihan.map(function (v) { return '<option value="' + aman(v) + '">' + aman(v) + '</option>'; }).join('') +
+        '</select>';
+    } else if (f.tipe === 'file') {
+      const terima = f.terima === 'gambar_pdf' ? 'image/*,application/pdf' : 'image/*';
+      html += '<div class="unggah" id="u_' + f.id + '">' +
+        '<input type="file" id="' + id + '" accept="' + terima + '" class="sembunyi" ' +
+        'onchange="berkasDipilih(\'' + aman(f.id) + '\', this)">' +
+        '<button type="button" class="btn btn-alt" onclick="$(\'' + id + '\').click()">' +
+        (f.terima === 'gambar_pdf' ? 'Pilih foto atau PDF' : 'Ambil / pilih foto') + '</button></div>';
+    } else {
+      const angka = f.tipe === 'angka';
+      html += '<input id="' + id + '"' +
+        (angka ? ' inputmode="numeric"' : (f.inputmode ? ' inputmode="' + aman(f.inputmode) + '"' : '')) +
+        (f.maks ? ' maxlength="' + f.maks + '"' : '') +
+        ' value="' + aman(nilaiAwal(f)) + '">';
+    }
+    html += bantuanHtml + '</div>';
+  });
+
+  if (j.pakaiPrioritas) {
+    html += '<div class="grup"><label for="fPrioritas">Tingkat gangguan</label><select id="fPrioritas">' +
+      konfig.prioritas.map(function (p) {
+        return '<option' + (p === 'Normal' ? ' selected' : '') + '>' + aman(p) + '</option>';
+      }).join('') + '</select>' +
+      '<div class="bantuan">Pilih Kritis hanya jika pelayanan pasien benar-benar terhenti.</div></div>';
+  }
+
+  $('isianForm').innerHTML = html;
+  $('btnKirim').disabled = false;
+  $('btnKirim').textContent = j.grup === 'Permohonan' ? 'Kirim permohonan' : 'Kirim laporan';
+  document.querySelector('#tiraiForm .lembar').scrollTop = 0;
+}
+
+// ---------- Lampiran: kompres di HP sebelum dikirim ----------
+function bacaDataUrl(file) {
+  return new Promise(function (ok, gagal) {
+    const r = new FileReader();
+    r.onload = function () { ok(r.result); };
+    r.onerror = function () { gagal(new Error('File tidak dapat dibaca.')); };
+    r.readAsDataURL(file);
+  });
+}
+
+function muatGambar(src) {
+  return new Promise(function (ok, gagal) {
+    const img = new Image();
+    img.onload = function () { ok(img); };
+    img.onerror = function () { gagal(new Error('Foto tidak dapat dibaca. Coba ambil foto ulang atau pilih file JPG/PNG.')); };
+    img.src = src;
+  });
+}
+
+async function kompresGambar(file, maksSisi) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await muatGambar(url);
+    const skala = Math.min(1, maksSisi / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * skala));
+    const h = Math.max(1, Math.round(img.naturalHeight * skala));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff';
+    g.fillRect(0, 0, w, h);
+    g.drawImage(img, 0, 0, w, h);
+    return c.toDataURL('image/jpeg', 0.85);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function berkasDipilih(fieldId, input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  const f = jenisAktif.fields.filter(function (x) { return x.id === fieldId; })[0];
+  const wadah = $('u_' + fieldId);
+  const maks = (konfig.maksFileMB || 10) * 1048576;
+
+  wadah.querySelector('button').disabled = true;
+  pesan('pesanForm', 'Menyiapkan file…', 'info');
+
+  try {
+    let dataUrl, mime;
+    if (file.type === 'application/pdf') {
+      if (f.terima !== 'gambar_pdf') throw new Error(f.label + ' harus berupa foto, bukan PDF.');
+      if (file.size > maks) throw new Error('PDF terlalu besar (' + ukuranTeks(file.size) + '). Maksimal ' + konfig.maksFileMB + ' MB.');
+      dataUrl = await bacaDataUrl(file);
+      mime = 'application/pdf';
+    } else if (/^image\//.test(file.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)) {
+      dataUrl = await kompresGambar(file, f.maksSisi || 1600);
+      mime = 'image/jpeg';
+    } else {
+      throw new Error('Format file tidak didukung. Gunakan foto' + (f.terima === 'gambar_pdf' ? ' atau PDF.' : '.'));
+    }
+
+    const data = dataUrl.split(',')[1];
+    const ukuran = Math.round(data.length * 3 / 4);
+    if (ukuran > maks) throw new Error('File terlalu besar setelah dikompres. Coba foto dengan resolusi lebih kecil.');
+
+    berkas[fieldId] = { mime: mime, data: data };
+    wadah.innerHTML =
+      '<div class="pratinjau">' +
+        (mime === 'application/pdf' ? '<div class="ikon-pdf">PDF</div>' : '<img alt="" src="' + dataUrl + '">') +
+        '<div class="info"><b>' + aman(file.name) + '</b>' + ukuranTeks(ukuran) + ' · siap dikirim</div>' +
+        '<button type="button" class="btn btn-alt btn-kecil" onclick="hapusBerkas(\'' + aman(fieldId) + '\')">Ganti</button>' +
+      '</div>';
+    pesan('pesanForm', '');
+  } catch (e) {
+    wadah.querySelector('button').disabled = false;
+    pesan('pesanForm', e.message, 'salah');
+  }
+}
+
+function hapusBerkas(fieldId) {
+  delete berkas[fieldId];
+  const f = jenisAktif.fields.filter(function (x) { return x.id === fieldId; })[0];
+  const terima = f.terima === 'gambar_pdf' ? 'image/*,application/pdf' : 'image/*';
+  $('u_' + fieldId).innerHTML =
+    '<input type="file" id="f_' + fieldId + '" accept="' + terima + '" class="sembunyi" ' +
+    'onchange="berkasDipilih(\'' + aman(fieldId) + '\', this)">' +
+    '<button type="button" class="btn btn-alt" onclick="$(\'f_' + fieldId + '\').click()">' +
+    (f.terima === 'gambar_pdf' ? 'Pilih foto atau PDF' : 'Ambil / pilih foto') + '</button>';
+  $('f_' + fieldId).click();
+}
+
+// ---------- Kirim ----------
 async function kirimTiket() {
-  const data = {
-    kategori:  $('fKategori').value,
-    judul:     $('fJudul').value.trim(),
-    deskripsi: $('fDeskripsi').value.trim(),
-    prioritas: $('fPrioritas').value
-  };
-  if (!data.judul)     return pesan('pesanForm', 'Ringkasan masalah wajib diisi.', 'salah');
-  if (!data.deskripsi) return pesan('pesanForm', 'Penjelasan detail wajib diisi.', 'salah');
+  const j = jenisAktif;
+  const data = {};
+  const file = {};
 
+  for (let i = 0; i < j.fields.length; i++) {
+    const f = j.fields[i];
+    if (f.tipe === 'file') {
+      if (berkas[f.id]) file[f.id] = berkas[f.id];
+      else if (f.wajib) return pesan('pesanForm', f.label + ' wajib dilampirkan.', 'salah');
+      continue;
+    }
+    if (f.tipe === 'setuju') {
+      data[f.id] = $('f_' + f.id).checked;
+      if (f.wajib && !data[f.id]) return pesan('pesanForm', 'Centang ' + f.label.toLowerCase() + ' untuk melanjutkan.', 'salah');
+      continue;
+    }
+    const v = $('f_' + f.id).value.trim();
+    if (!v) {
+      if (f.wajib) return pesan('pesanForm', f.label + ' wajib diisi.', 'salah');
+      continue;
+    }
+    if (f.tipe === 'angka' && !/^[0-9]+$/.test(v)) return pesan('pesanForm', f.label + ' harus berupa angka.', 'salah');
+    if (f.pola && !new RegExp(f.pola).test(v)) return pesan('pesanForm', f.pesanPola || (f.label + ' tidak valid.'), 'salah');
+    data[f.id] = v;
+  }
+
+  const jumlahFile = Object.keys(file).length;
   $('btnKirim').disabled = true;
-  pesan('pesanForm', 'Mengirim…', 'info');
+  pesan('pesanForm', jumlahFile ? 'Mengirim dan mengunggah lampiran… mohon tunggu.' : 'Mengirim…', 'info');
 
-  const h = await api('buatTiket', data);
+  const h = await api('buatTiket', {
+    jenis: j.kode,
+    data: data,
+    file: file,
+    prioritas: j.pakaiPrioritas ? $('fPrioritas').value : 'Normal'
+  });
   $('btnKirim').disabled = false;
 
   if (!h.ok) return pesan('pesanForm', h.pesan, 'salah');
@@ -571,74 +844,119 @@ async function kirimTiket() {
   setTimeout(function () { pesan('pesanPegawai', ''); }, 6000);
 }
 
-// ---------- Detail tiket ----------
+// ============================================================
+//  DETAIL TIKET
+// ============================================================
 async function bukaDetail(id) {
   tiketTerpilih = id;
   pesan('pesanDetail', '');
+  $('detailJudul').textContent = 'Detail tiket';
   $('detailIsi').innerHTML = '<div class="memuat">Memuat…</div>';
   tampil('tiraiDetail', true);
 
-  const h = await api('detailTiket', { id: id });
-  if (!h.ok) return pesan('pesanDetail', h.pesan, 'salah');
+  const [h] = await Promise.all([api('detailTiket', { id: id }), ambilKonfig().catch(function () {})]);
+  if (!h.ok) { $('detailIsi').innerHTML = ''; return pesan('pesanDetail', h.pesan, 'salah'); }
 
   const t = h.tiket;
+  const j = cariJenis(t.jenis);
   $('detailJudul').textContent = t.judul;
 
   let html =
-    baris('ID', t.id) +
+    baris('ID', aman(t.id)) +
     baris('Status', '<span class="tag ' + kelasTag(t.status) + '">' + aman(t.status) + '</span>') +
+    baris('Jenis', '<span class="tag tag-' + kelasGrup(t.grup) + '">' + aman(t.kategori) + '</span>') +
     baris('Prioritas', '<span class="tag ' + kelasTag(t.prioritas) + '">' + aman(t.prioritas) + '</span>') +
-    baris('Kategori', aman(t.kategori)) +
-    baris('Pelapor', aman(t.nama) + ' (' + aman(t.nip) + ')') +
+    baris('Pelapor', aman(t.nama) + '\n' + aman(samarkan(t.nip))) +
     baris('Unit', aman(t.unit)) +
-    (t.hp ? baris('No HP', aman(t.hp)) : '') +
+    (t.hp ? baris('WhatsApp', aman(t.hp)) : '') +
     baris('Dibuat', tglLokal(t.dibuat)) +
     (t.teknisi ? baris('Teknisi', aman(t.teknisi)) : '') +
-    (t.selesai ? baris('Selesai', tglLokal(t.selesai) + ' (' + t.durasi + ' jam)') : '') +
-    '<div style="margin-top:12px"><label>Penjelasan</label>' +
-    '<div class="catatan">' + aman(t.deskripsi) + '</div></div>' +
-    (t.catatan ? '<div style="margin-top:12px"><label>Catatan tim IT</label>' +
-                 '<div class="catatan">' + aman(t.catatan) + '</div></div>' : '');
+    (t.selesai ? baris('Selesai', tglLokal(t.selesai) + ' (' + aman(t.durasi) + ' jam)') : '');
+
+  // Isian sesuai jenis
+  if (j) {
+    html += '<h3>Isian</h3>';
+    j.fields.forEach(function (f) {
+      if (f.tipe === 'file') return;
+      const v = t.isi[f.id];
+      if (v === undefined || v === '') return;
+      html += baris(f.label, aman(v));
+    });
+    const berlampiran = j.fields.filter(function (f) { return f.tipe === 'file' && t.lampiran.indexOf(f.id) !== -1; });
+    if (berlampiran.length) {
+      html += '<h3>Lampiran</h3>' + berlampiran.map(function (f) {
+        return '<div class="lampiran-item" id="lamp_' + aman(f.id) + '">' +
+          '<button class="btn btn-alt btn-kecil" onclick="lihatLampiran(\'' + aman(t.id) + '\',\'' + aman(f.id) + '\')">' +
+          'Lihat ' + aman(f.label.toLowerCase()) + '</button></div>';
+      }).join('');
+    }
+  } else if (t.deskripsi) {
+    html += '<h3>Penjelasan</h3><div class="catatan">' + aman(t.deskripsi) + '</div>';
+  }
+
+  if (t.catatan) html += '<h3>Catatan tim IT</h3><div class="catatan">' + aman(t.catatan) + '</div>';
 
   if (sesi.profil.peran === 'petugas') {
-    html += '<div style="margin-top:18px;border-top:1px solid var(--garis);padding-top:16px">' +
+    html += '<div style="margin-top:20px;border-top:1px solid var(--garis);padding-top:16px">' +
       '<h2>Perbarui tiket</h2>' +
       '<div class="grup"><label for="uStatus">Status</label><select id="uStatus"></select></div>' +
       '<div class="grup"><label for="uTeknisi">Teknisi penanggung jawab</label><select id="uTeknisi"></select></div>' +
       '<div class="grup"><label for="uPrioritas">Prioritas</label><select id="uPrioritas"></select></div>' +
       '<div class="grup"><label for="uCatatan">Tambah catatan</label>' +
       '<textarea id="uCatatan" style="min-height:80px" placeholder="Tindakan yang dilakukan…"></textarea></div>' +
-      '<button class="btn" id="btnSimpan" onclick="simpanPerubahan()">Simpan Perubahan</button>' +
+      '<button class="btn" id="btnSimpan" onclick="simpanPerubahan()">Simpan perubahan</button>' +
       '</div>';
   }
 
   if (h.riwayat && h.riwayat.length) {
-    html += '<div style="margin-top:18px"><label>Riwayat</label>' +
-      h.riwayat.map(function (r) {
-        return '<div class="baris"><span>' + tglLokal(r.waktu) + '</span>' +
-               '<span>' + aman(r.oleh) + ' — ' + aman(r.detail || r.aksi) + '</span></div>';
-      }).join('') + '</div>';
+    html += '<h3>Riwayat</h3>' + h.riwayat.map(function (r) {
+      return baris(tglLokal(r.waktu), aman(r.oleh) + ' — ' + aman(r.detail || r.aksi));
+    }).join('');
   }
 
   $('detailIsi').innerHTML = html;
 
   if (sesi.profil.peran === 'petugas') {
-    $('btnSimpan').disabled = true;
-    try {
-      const k = await ambilKonfig();
-      isiPilihan('uStatus', k.status, t.status);
-      isiPilihan('uTeknisi', [''].concat(k.teknisi), t.teknisi);
-      isiPilihan('uPrioritas', k.prioritas, t.prioritas);
-      $('btnSimpan').disabled = false;
-    } catch (e) {
-      pesan('pesanDetail', 'Pilihan status gagal dimuat (' + e.message +
-        '). Tutup lalu buka tiket ini lagi.', 'salah');
+    if (konfig) {
+      isiPilihan('uStatus', konfig.status, t.status);
+      isiPilihan('uTeknisi', [''].concat(konfig.teknisi), t.teknisi);
+      isiPilihan('uPrioritas', konfig.prioritas, t.prioritas);
+    } else {
+      $('btnSimpan').disabled = true;
+      pesan('pesanDetail', 'Pilihan status gagal dimuat. Tutup lalu buka tiket ini lagi.', 'salah');
     }
   }
 }
 
 function baris(k, v) {
   return '<div class="baris"><span>' + aman(k) + '</span><span>' + v + '</span></div>';
+}
+
+async function lihatLampiran(idTiket, fieldId) {
+  const wadah = $('lamp_' + fieldId);
+  const tombol = wadah.querySelector('button');
+  tombol.disabled = true;
+  tombol.textContent = 'Memuat…';
+
+  const h = await api('lampiran', { id: idTiket, field: fieldId });
+  if (!h.ok) {
+    tombol.disabled = false;
+    tombol.textContent = 'Coba lagi';
+    return pesan('pesanDetail', h.pesan, 'salah');
+  }
+
+  if (/^image\//.test(h.mime)) {
+    wadah.innerHTML = '<img alt="Lampiran" src="data:' + aman(h.mime) + ';base64,' + h.data + '">';
+    return;
+  }
+
+  // PDF: buat berkas sementara lalu buka
+  const bytes = atob(h.data);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  const url = URL.createObjectURL(new Blob([arr], { type: h.mime }));
+  wadah.innerHTML = '<a class="btn btn-alt btn-kecil" style="display:inline-block;text-decoration:none" href="' +
+    url + '" target="_blank" rel="noopener" download="' + aman(h.nama) + '">Buka ' + aman(h.nama) + '</a>';
 }
 
 function tutupDetail() {
@@ -670,8 +988,6 @@ async function simpanPerubahan() {
 
 // ---------- Mulai ----------
 (async function mulai() {
-  // Mulai ambil daftar pilihan di latar belakang, tanpa menunggu.
-  // Kalau gagal di sini, akan dicoba lagi saat benar-benar dibutuhkan.
   ambilKonfig().catch(function () {});
 
   try {
