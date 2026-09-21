@@ -9,7 +9,7 @@
  * pegawai mengambil versi terbaru.
  */
 
-const VERSI = 'helpdesk-v5';
+const VERSI = 'helpdesk-v6';
 
 const CANGKANG = [
   './',
@@ -45,10 +45,13 @@ self.addEventListener('fetch', function (e) {
   // Panggilan API, Firebase, dan situs lain selalu langsung ke jaringan.
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
-  // Halaman: jaringan dulu, cache sebagai cadangan saat offline.
+  // Halaman: selalu tanyakan versi terbaru ke server (GitHub Pages menyuruh
+  // HP menyimpan halaman 10 menit; tanpa 'no-cache', perbaikan di GitHub
+  // bisa tidak terlihat di APK). Cache hanya dipakai saat offline.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req).catch(function () { return caches.match('./index.html'); })
+      fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
+        .catch(function () { return caches.match('./index.html'); })
     );
     return;
   }
