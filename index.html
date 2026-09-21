@@ -30,6 +30,15 @@ header{background:var(--hijau);color:#fff;padding:calc(12px + env(safe-area-inse
 header h1{font-size:17px;margin:0;font-weight:600;flex:1;min-width:0}
 header .sub{font-size:12px;opacity:.85;display:block;font-weight:400;
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avatar{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.75);
+        color:#fff;font-weight:700;font-size:14px;letter-spacing:.02em;cursor:pointer;flex-shrink:0;
+        display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit}
+.avatar:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.avatar-besar{width:64px;height:64px;font-size:22px;border:0;cursor:default;margin:0 auto 10px}
+.profil-kepala{text-align:center;padding:4px 0 14px;border-bottom:1px solid var(--garis);margin-bottom:6px}
+.profil-kepala b{display:block;font-size:17px}
+.profil-kepala span{font-size:13px;color:var(--teks2)}
+.catatan-masuk{font-size:12.5px;color:var(--teks2);margin:14px 0 10px;text-align:center}
 .btn-keluar{background:rgba(255,255,255,.18);border:0;color:#fff;padding:7px 12px;
             border-radius:8px;font-size:13px;cursor:pointer;flex-shrink:0}
 
@@ -245,7 +254,7 @@ button{font-family:inherit}
 <div id="layarPegawai" class="sembunyi">
   <header>
     <h1>Tiket Saya<span class="sub" id="infoPegawai"></span></h1>
-    <button class="btn-keluar" onclick="keluar()">Keluar</button>
+    <button class="avatar" id="avatarPegawai" onclick="bukaProfil()" aria-label="Profil saya"></button>
   </header>
   <main>
     <div id="notifPegawai"></div>
@@ -259,7 +268,7 @@ button{font-family:inherit}
 <div id="layarPetugas" class="sembunyi">
   <header>
     <h1>Antrian Tiket<span class="sub" id="infoPetugas"></span></h1>
-    <button class="btn-keluar" onclick="keluar()">Keluar</button>
+    <button class="avatar" id="avatarPetugas" onclick="bukaProfil()" aria-label="Profil saya"></button>
   </header>
   <main>
     <div id="notifPetugas"></div>
@@ -294,6 +303,17 @@ button{font-family:inherit}
       <div id="isianForm"></div>
       <button class="btn" id="btnKirim" onclick="kirimTiket()">Kirim</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ LEMBAR: PROFIL ============ -->
+<div id="tiraiProfil" class="tirai sembunyi" onclick="if(event.target===this)tampil('tiraiProfil', false)">
+  <div class="lembar">
+    <div class="lembar-atas">
+      <h2 style="margin:0">Profil saya</h2>
+      <button class="btn-tutup" onclick="tampil('tiraiProfil', false)" aria-label="Tutup">&times;</button>
+    </div>
+    <div id="profilIsi"></div>
   </div>
 </div>
 
@@ -515,8 +535,19 @@ function mulaiSesi(h) {
   bukaLayarUtama();
 }
 
-function keluar() {
-  if (sesi) lepasNotif();
+/**
+ * keluar(true)  = pengguna menekan tombol Keluar: sesi dihapus di server
+ *                 dan HP ini berhenti menerima notifikasi.
+ * keluar()      = sesi habis dengan sendirinya: hanya kembali ke layar masuk,
+ *                 notifikasi tetap diterima di HP ini.
+ */
+function keluar(manual) {
+  if (manual && sesi) {
+    let t = null;
+    try { t = localStorage.getItem('fcmToken'); } catch (e) {}
+    api('keluar', { fcm: t });
+  }
+  tampil('tiraiProfil', false);
   sesi = null;
   try { localStorage.removeItem('sesiHelpdesk'); } catch (e) {}
   tampil('layarPegawai', false);
@@ -552,6 +583,7 @@ function bukaLayarUtama() {
     $('infoPegawai').textContent = p.nama + ' · ' + p.unit;
     muatTiketSaya();
   }
+  gambarAvatar();
   segarkanNotif();
   bukaTiketTertunda();
 }
@@ -1043,7 +1075,7 @@ let fbMessaging = null;
 let tiketTertunda = new URLSearchParams(location.search).get('tiket');
 
 function notifSiap() {
-  return !!(firebaseConfig && firebaseConfig.projectId && VAPID_KEY);
+  return !!(FIREBASE_CONFIG && FIREBASE_CONFIG.projectId && VAPID_KEY);
 }
 function notifDidukung() {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -1073,7 +1105,7 @@ async function ambilTokenFcm() {
       await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-app-compat.js');
       await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-messaging-compat.js');
     }
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     fbMessaging = firebase.messaging();
   }
   const reg = await navigator.serviceWorker.ready;
@@ -1128,8 +1160,8 @@ function tutupBannerNotif() {
   $(wadahNotif()).innerHTML = '';
 }
 
-async function aktifkanNotif() {
-  const tombol = $('btnNotif');
+async function aktifkanNotif(dariProfil) {
+  const tombol = $(dariProfil ? 'btnNotifProfil' : 'btnNotif');
   const wadahPesan = sesi.profil.peran === 'petugas' ? 'pesanPetugas' : 'pesanPegawai';
   if (tombol) { tombol.disabled = true; tombol.textContent = 'Menyiapkan…'; }
   try {
@@ -1143,6 +1175,7 @@ async function aktifkanNotif() {
     pesan(wadahPesan, 'Notifikasi belum bisa diaktifkan: ' + e.message, 'salah');
   }
   gambarBannerNotif();
+  if (dariProfil) gambarProfil();
 }
 
 /** Setiap kali masuk: kalau izin sudah ada, daftarkan ulang diam-diam. */
@@ -1153,10 +1186,87 @@ function segarkanNotif() {
   }
 }
 
-function lepasNotif() {
-  let t = null;
-  try { t = localStorage.getItem('fcmToken'); } catch (e) {}
-  if (t) api('hapusNotif', { fcm: t });
+// ============================================================
+//  PROFIL (lingkaran inisial di pojok kanan atas)
+// ============================================================
+const WARNA_AVATAR = ['#0f766e', '#1d4ed8', '#7c3aed', '#b45309', '#be185d', '#047857', '#4338ca', '#c2410c'];
+
+/** "Siti Rahayu, S.Kep" -> "SR";  "dr. Andi" -> "AN" */
+function inisial(nama) {
+  const bersih = String(nama || '').split(',')[0]
+    .replace(/\b(dr|drg|ns|apt|ir|h|hj|prof)\.?\s+/gi, '').trim();
+  const kata = bersih.split(/\s+/).filter(Boolean);
+  if (!kata.length) return '?';
+  if (kata.length === 1) return kata[0].slice(0, 2).toUpperCase();
+  return (kata[0][0] + kata[1][0]).toUpperCase();
+}
+
+function warnaAvatar(nama) {
+  let h = 0;
+  const s = String(nama || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return WARNA_AVATAR[h % WARNA_AVATAR.length];
+}
+
+function gambarAvatar() {
+  if (!sesi) return;
+  const p = sesi.profil;
+  const el = $(p.peran === 'petugas' ? 'avatarPetugas' : 'avatarPegawai');
+  el.textContent = inisial(p.nama);
+  el.style.background = warnaAvatar(p.nama);
+  el.setAttribute('aria-label', 'Profil ' + p.nama);
+}
+
+function bukaProfil() {
+  gambarProfil();
+  tampil('tiraiProfil', true);
+}
+
+function statusNotif() {
+  if (!notifSiap()) return null;
+  if (iPhoneBelumDipasang()) return { teks: 'Tambahkan aplikasi ke Layar Utama dulu', tombol: false };
+  if (!notifDidukung()) return { teks: 'Tidak didukung di perangkat ini', tombol: false };
+  if (Notification.permission === 'denied') return { teks: 'Diblokir di pengaturan HP', tombol: false };
+  let terdaftar = false;
+  try { terdaftar = !!localStorage.getItem('fcmToken'); } catch (e) {}
+  if (Notification.permission === 'granted' && terdaftar) return { teks: 'Aktif di HP ini', aktif: true };
+  return { teks: 'Belum aktif', tombol: true };
+}
+
+function gambarProfil() {
+  const p = sesi.profil;
+  const petugas = p.peran === 'petugas';
+  const n = statusNotif();
+
+  let html =
+    '<div class="profil-kepala">' +
+      '<div class="avatar avatar-besar" style="background:' + warnaAvatar(p.nama) + '">' + aman(inisial(p.nama)) + '</div>' +
+      '<b>' + aman(p.nama) + '</b>' +
+      '<span>' + (petugas ? 'Petugas IT' + (p.level === 'admin' ? ' · Admin' : '') : 'Pegawai · ' + aman(p.unit)) + '</span>' +
+    '</div>';
+
+  if (petugas) {
+    html += baris('Username', aman(p.username));
+  } else {
+    html += baris(String(p.nip || '').length === 16 ? 'NIK' : 'NIP', aman(samarkan(p.nip)));
+    html += baris('Unit', aman(p.unit));
+    if (p.hp) html += baris('WhatsApp', aman(p.hp));
+  }
+
+  if (n) {
+    html += '<div class="baris"><span>Notifikasi</span><span>' +
+      (n.aktif ? '<span class="tag tag-Selesai">' + aman(n.teks) + '</span>' : aman(n.teks)) +
+      (n.tombol ? ' <button class="btn btn-kecil" id="btnNotifProfil" style="margin-left:6px" onclick="aktifkanNotif(true)">Aktifkan</button>' : '') +
+      '</span></div>';
+  }
+
+  html +=
+    '<p class="catatan-masuk">Anda tetap masuk di HP ini sampai menekan Keluar' +
+    (n ? ', dan notifikasi tetap diterima walaupun aplikasi ditutup.' : '.') + '</p>' +
+    '<button class="btn btn-bahaya-alt" onclick="keluar(true)">Keluar</button>' +
+    (n ? '<p class="catatan-masuk" style="margin-top:8px">Setelah keluar, HP ini berhenti menerima notifikasi.</p>' : '');
+
+  $('profilIsi').innerHTML = html;
 }
 
 if ('serviceWorker' in navigator) {
@@ -1205,7 +1315,9 @@ async function hapusTiket() {
     if (tersimpan) {
       sesi = JSON.parse(tersimpan);
       const cek = await api(sesi.profil.peran === 'petugas' ? 'statistik' : 'tiketSaya');
-      if (cek.ok) bukaLayarUtama(); else keluar();
+      // Sesi habis -> api() sudah mengembalikan ke layar masuk.
+      // Sinyal lemah / server lambat -> tetap masuk, jangan dikeluarkan.
+      if (cek.ok || (cek.kode !== 'SESI_HABIS' && sesi)) bukaLayarUtama();
     }
   } catch (e) { keluar(); }
 })();
