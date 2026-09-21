@@ -24,6 +24,8 @@
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
      background:var(--bg);color:var(--teks);font-size:15px;line-height:1.5}
 .sembunyi{display:none !important}
+/* Sudah pernah masuk: jangan tampilkan layar login sekilas saat aplikasi dibuka */
+.bersesi #layarMasuk{display:none}
 
 header{background:var(--hijau);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
        position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px}
@@ -186,6 +188,7 @@ button{font-family:inherit}
 .notif-banner .btn{width:auto;flex-shrink:0}
 .notif-banner .x{background:none;border:0;color:#a16207;font-size:20px;line-height:1;padding:2px 4px;cursor:pointer;flex-shrink:0}
 </style>
+<script>try{if(localStorage.getItem('sesiHelpdesk'))document.documentElement.classList.add('bersesi')}catch(e){}</script>
 </head>
 <body>
 
@@ -351,6 +354,7 @@ const firebaseConfig = {
   measurementId: "G-4WZEB2J8QQ"
 };   // ganti null dengan { apiKey: "...", ... }
 const VAPID_KEY = 'BGRuzqQXJ6GTGpCi0V4L2CLIqyG1-K_nM5_H3QnpO750NNPsmf1tvvX6vaK9Ifl-cbPuYNUgmXZmq-ar79xbOF4';           // Web Push certificate (Key pair), diawali "B"
+
 
 const FB_VERSI = '12.18.0';
 
@@ -554,6 +558,7 @@ function keluar(manual) {
   tampil('layarPetugas', false);
   tampil('tiraiForm', false);
   tampil('tiraiDetail', false);
+  document.documentElement.classList.remove('bersesi');
   tampil('layarMasuk', true);
   gantiTab('pegawai');
   ['inNip', 'inNama', 'inHp', 'inUnitLain', 'inUser', 'inPin'].forEach(function (id) { $(id).value = ''; });
@@ -583,9 +588,11 @@ function bukaLayarUtama() {
     $('infoPegawai').textContent = p.nama + ' · ' + p.unit;
     muatTiketSaya();
   }
-  gambarAvatar();
-  segarkanNotif();
-  bukaTiketTertunda();
+  // Bagian tambahan dijaga satu per satu: kalau salah satu gagal,
+  // pengguna tetap masuk dan layar tetap bisa dipakai.
+  [gambarAvatar, segarkanNotif, bukaTiketTertunda].forEach(function (f) {
+    try { f(); } catch (e) { console.error(e); }
+  });
 }
 
 // ---------- Daftar tiket ----------
@@ -1074,8 +1081,20 @@ async function simpanPerubahan() {
 let fbMessaging = null;
 let tiketTertunda = new URLSearchParams(location.search).get('tiket');
 
+/** Menerima nama firebaseConfig maupun firebaseConfig (salinan dari Firebase Console). */
+function konfigFirebase() {
+  if (typeof firebaseConfig !== 'undefined' && firebaseConfig) return firebaseConfig;
+  if (typeof firebaseConfig !== 'undefined' && firebaseConfig) return firebaseConfig;
+  return null;
+}
+function kunciVapid() {
+  if (typeof VAPID_KEY !== 'undefined' && VAPID_KEY) return VAPID_KEY;
+  if (typeof vapidKey !== 'undefined' && vapidKey) return vapidKey;
+  return '';
+}
 function notifSiap() {
-  return !!(firebaseConfig && firebaseConfig.projectId && VAPID_KEY);
+  const c = konfigFirebase();
+  return !!(c && c.projectId && kunciVapid());
 }
 function notifDidukung() {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -1105,11 +1124,11 @@ async function ambilTokenFcm() {
       await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-app-compat.js');
       await muatSkrip('https://www.gstatic.com/firebasejs/' + FB_VERSI + '/firebase-messaging-compat.js');
     }
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(konfigFirebase());
     fbMessaging = firebase.messaging();
   }
   const reg = await navigator.serviceWorker.ready;
-  return fbMessaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+  return fbMessaging.getToken({ vapidKey: kunciVapid(), serviceWorkerRegistration: reg });
 }
 
 /** Mendaftarkan HP ini ke akun yang sedang masuk. Aman diulang. */
@@ -1218,7 +1237,11 @@ function gambarAvatar() {
 }
 
 function bukaProfil() {
-  gambarProfil();
+  try { gambarProfil(); }
+  catch (e) {
+    console.error(e);
+    $('profilIsi').innerHTML = '<button class="btn btn-bahaya-alt" onclick="keluar(true)">Keluar</button>';
+  }
   tampil('tiraiProfil', true);
 }
 
@@ -1307,19 +1330,21 @@ async function hapusTiket() {
 }
 
 // ---------- Mulai ----------
-(async function mulai() {
+(function mulai() {
   ambilKonfig().catch(function () {});
 
+  let tersimpan = null;
   try {
-    const tersimpan = localStorage.getItem('sesiHelpdesk');
-    if (tersimpan) {
-      sesi = JSON.parse(tersimpan);
-      const cek = await api(sesi.profil.peran === 'petugas' ? 'statistik' : 'tiketSaya');
-      // Sesi habis -> api() sudah mengembalikan ke layar masuk.
-      // Sinyal lemah / server lambat -> tetap masuk, jangan dikeluarkan.
-      if (cek.ok || (cek.kode !== 'SESI_HABIS' && sesi)) bukaLayarUtama();
-    }
-  } catch (e) { keluar(); }
+    tersimpan = localStorage.getItem('sesiHelpdesk');
+    if (tersimpan) sesi = JSON.parse(tersimpan);
+  } catch (e) { sesi = null; }
+  if (!sesi || !sesi.token || !sesi.profil) { sesi = null; keluar(); return; }
+
+  // Langsung tampilkan layar utama tanpa menunggu server. Pengecekan sesi
+  // terjadi sendiri saat daftar tiket dimuat: kalau sesi sudah habis, api()
+  // mengembalikan ke layar masuk; kalau sinyal lemah, pengguna tetap masuk.
+  try { bukaLayarUtama(); }
+  catch (e) { console.error(e); }
 })();
 
 if ('serviceWorker' in navigator) {
